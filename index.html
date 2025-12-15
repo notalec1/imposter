@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THE IMPOSTER</title>
+    <title>THE IMPOSTER: Cyberpunk</title>
     
     <!-- FONTS & LIBS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,13 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* --- ORIGINAL CYBERPUNK THEME (STRICT REVERT) --- */
+        /* --- ORIGINAL CYBERPUNK THEME --- */
         :root {
             --bg: #050505;
             --surface: #111;
-            --primary: #0f0; 
-            --secondary: #f0f; 
-            --accent: #0ff; 
+            --primary: #0f0; /* Terminal Green */
+            --secondary: #f0f; /* Magenta */
+            --accent: #0ff; /* Cyan */
             --text: #eee;
             --font: 'Space Grotesk', monospace;
         }
@@ -35,21 +35,28 @@
         }
 
         /* --- LAYERS --- */
-        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.25; pointer-events: none; }
+        #matrixCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0.25; pointer-events: none;
+        }
+
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%);
-            background-size: 100% 4px; pointer-events: none; z-index: 1; opacity: 0.6;
+            background-size: 100% 4px; 
+            pointer-events: none; z-index: 1; opacity: 0.6;
         }
 
         .container { 
             width: 100%; max-width: 600px; text-align: center; 
             z-index: 10; position: relative; 
-            background: rgba(5, 5, 5, 0.85); padding: 20px; border-radius: 10px;
+            background: rgba(5, 5, 5, 0.85); 
+            padding: 20px;
+            border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* --- TYPOGRAPHY --- */
+        /* --- TYPOGRAPHY (Original Glitch Style) --- */
         h1 { 
             font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; 
             color: var(--primary); text-shadow: 2px 2px var(--secondary);
@@ -57,13 +64,23 @@
         }
         h2 { font-size: 1.2rem; color: var(--accent); opacity: 0.9; text-transform: uppercase; margin-bottom: 20px; }
         p { color: #888; line-height: 1.5; }
-        @keyframes glitch { 2%, 64% { transform: translate(2px,0) skew(0deg); } 4%, 60% { transform: translate(-2px,0) skew(0deg); } 62% { transform: translate(0,0) skew(5deg); } }
 
-        /* --- UI ELEMENTS --- */
+        @keyframes glitch {
+            2%, 64% { transform: translate(2px,0) skew(0deg); }
+            4%, 60% { transform: translate(-2px,0) skew(0deg); }
+            62% { transform: translate(0,0) skew(5deg); }
+        }
+
+        /* --- UI ELEMENTS (Original Angular Style) --- */
         .input-group { border-bottom: 2px solid var(--surface); margin-bottom: 20px; display: flex; }
-        input { background: transparent; border: none; color: var(--primary); padding: 15px; font-size: 1.2rem; flex: 1; font-family: var(--font); text-transform: uppercase; }
+        input {
+            background: transparent; border: none; color: var(--primary);
+            padding: 15px; font-size: 1.2rem; flex: 1; font-family: var(--font);
+            text-transform: uppercase;
+        }
         input:focus { outline: none; }
-        
+        input::placeholder { color: #333; }
+
         .btn {
             background: var(--surface); color: var(--primary);
             border: 1px solid var(--primary); padding: 18px 30px;
@@ -77,51 +94,103 @@
         
         .btn-secondary { border-color: var(--text); color: var(--text); }
         .btn-secondary:hover { background: var(--text); color: var(--bg); box-shadow: 0 0 15px var(--text); }
+        
         .btn-danger { border-color: var(--secondary); color: var(--secondary); }
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
-        /* --- CHIPS & GRID --- */
+        .btn-small { padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; display: inline-block; }
+
+        /* --- GAME COMPONENTS --- */
         .grid-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
-        .name-chip { background: #111; padding: 8px 16px; border: 1px solid #333; color: #888; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
+        .name-chip { 
+            background: #111; padding: 8px 16px; border: 1px solid #333; 
+            color: #888; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
+        }
         .name-chip:hover { border-color: var(--secondary); color: var(--secondary); text-decoration: line-through; }
-        .topic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
-        .topic-card { padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.5); cursor: pointer; transition: 0.3s; }
+        
+        /* Preset Chip Style */
+        .preset-chip {
+            background: rgba(0, 255, 255, 0.1); border: 1px dashed var(--accent); color: var(--accent);
+            padding: 6px 12px; font-size: 0.7rem; cursor: pointer; opacity: 0.7;
+        }
+        .preset-chip:hover { opacity: 1; background: var(--accent); color: #000; }
+
+        .topic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; max-height: 300px; overflow-y: auto; padding-right: 5px;}
+        .topic-card { 
+            padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.5); 
+            cursor: pointer; transition: 0.3s;
+        }
         .topic-card:hover { border-color: var(--accent); box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.2); }
 
-        /* --- SECRET BOX --- */
+        /* --- SECRET REVEAL BOX --- */
         .secret-box {
-            margin: 40px auto; width: 280px; height: 280px; background: #000; border: 2px solid #333;
+            margin: 40px auto; width: 280px; height: 280px;
+            background: #000; border: 2px solid #333;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.5); transition: 0.3s;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            transition: 0.3s;
         }
-        .secret-content { font-size: 2.5rem; font-weight: bold; text-align: center; filter: blur(40px) brightness(0.5); opacity: 0; transition: all 0.2s; color: var(--primary); z-index: 2; }
-        .hint-text { font-size: 1rem; color: #fff; background: var(--secondary); padding: 4px 12px; margin-top: 15px; border-radius: 2px; opacity: 0; transition: all 0.2s; transform: translateY(10px); z-index: 2; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
-        .fingerprint-icon { font-size: 4rem; color: #333; transition: 0.3s; animation: pulse-red 2s infinite; border-radius: 50%; position: absolute; z-index: 1; }
+        .secret-content { 
+            font-size: 2.5rem; font-weight: bold; text-align: center;
+            filter: blur(40px) brightness(0.5); opacity: 0; transition: all 0.2s;
+            color: var(--primary); z-index: 2;
+        }
+        .hint-text {
+            font-size: 1rem; color: #fff; background: var(--secondary); 
+            padding: 4px 12px; margin-top: 15px; border-radius: 2px;
+            opacity: 0; transition: all 0.2s; transform: translateY(10px); z-index: 2;
+            text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
+        }
+        .fingerprint-icon {
+            font-size: 4rem; color: #333; transition: 0.3s;
+            animation: pulse-red 2s infinite; border-radius: 50%;
+            position: absolute; z-index: 1;
+        }
         .secret-box.revealing { border-color: var(--primary); box-shadow: 0 0 50px var(--primary); }
         .secret-box.revealing .secret-content { filter: blur(0); opacity: 1; }
         .secret-box.revealing .hint-text { opacity: 1; transform: translateY(0); }
         .secret-box.revealing .fingerprint-icon { opacity: 0; transform: scale(1.5); }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
 
-        /* --- MODALS --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
         .modal-overlay.active { display: flex; }
         .qr-container { background: white; padding: 15px; margin: 20px; clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px); }
         
-        .modal-content { background: #111; padding: 30px; width: 90%; max-width: 500px; border: 1px solid var(--text); position: relative; max-height: 90vh; overflow-y: auto; }
-        .history-item { border-bottom: 1px solid #333; padding: 10px 0; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-        .history-win { color: var(--primary); }
-        .history-lose { color: var(--secondary); }
-
-        /* --- OTHER --- */
-        .vote-card { background: #111; border: 2px solid #333; padding: 20px 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; opacity: 0.8; }
-        .vote-card.selected { border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite; }
+        /* --- VOTING --- */
         .voting-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin: 30px 0; }
-        
+        .vote-card {
+            background: #111; border: 2px solid #333; padding: 20px 10px;
+            border-radius: 8px; cursor: pointer; transition: 0.2s;
+            opacity: 0.8;
+        }
+        .vote-card:hover { transform: scale(1.05); opacity: 1; border-color: white; }
+        .vote-card.selected { 
+            border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); 
+            box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite;
+        }
+        .vote-card.selected::after {
+            content: "ELIMINATE"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--secondary); color: white; font-size: 0.7rem; padding: 2px 6px; font-weight: bold;
+        }
+
+        /* --- RESULTS --- */
         .result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
         .win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
         .win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
 
+        /* --- TOGGLE --- */
         .toggle-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; opacity: 0.7; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -130,229 +199,289 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* --- SPEAKER REVEAL (NEW BUT ORIGINAL STYLE) --- */
-        .speaker-box { padding: 20px; border: 2px solid var(--primary); margin: 20px 0; background: rgba(0, 255, 0, 0.05); }
-        .speaker-name { font-size: 2.5rem; font-weight: bold; color: var(--primary); min-height: 60px; display:flex; align-items:center; justify-content:center; }
-        
-        /* --- PERMANENT TRASH BUTTON --- */
-        .trash-btn {
-            position: fixed; bottom: 20px; right: 20px; z-index: 9999;
-            width: 50px; height: 50px; background: rgba(0,0,0,0.8);
-            border: 2px solid #333; color: #333; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; cursor: pointer; transition: 0.3s;
+        /* --- NEW STYLES: TURN DISPLAY & HISTORY --- */
+        .turn-display {
+            border: 1px solid var(--accent); color: var(--accent); padding: 15px; margin: 20px 0;
+            background: rgba(0, 255, 255, 0.05); font-weight: bold; font-size: 1.2rem;
+            text-transform: uppercase; letter-spacing: 1px;
         }
-        .trash-btn:hover { border-color: red; color: red; background: black; transform: scale(1.1); box-shadow: 0 0 20px red; }
+        .turn-display.animate { animation: flash-bg 0.5s infinite; }
+        @keyframes flash-bg { 0% {background: transparent;} 50% {background: rgba(0,255,255,0.2);} 100% {background: transparent;} }
+
+        .history-item {
+            background: #111; padding: 10px; border-bottom: 1px solid #333;
+            display: flex; justify-content: space-between; font-size: 0.8rem; text-align: left;
+        }
+        .history-win { color: var(--primary); }
+        .history-loss { color: var(--secondary); }
     </style>
 </head>
 <body>
 
+    <!-- BACKGROUND LAYERS -->
     <canvas id="matrixCanvas"></canvas>
     <div class="scanlines"></div>
 
     <!-- MAIN APP -->
     <div id="app" class="container">
+        <!-- Default Content -->
         <h1 id="loading-text" style="color:white; margin-top:30%;">INITIALIZING...</h1>
+        <p>System Boot Sequence</p>
+        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload()" style="margin-top:20px;">FORCE RESET</button>
     </div>
 
-    <!-- TRASH CAN (PERMANENT) -->
-    <button class="trash-btn" onclick="wipeData()" title="FACTORY RESET">🗑️</button>
-
-    <!-- MODALS -->
-    <div id="qrModal" class="modal-overlay" onclick="closeModal('qrModal')">
-        <div class="modal-content qr-container" onclick="event.stopPropagation()">
+    <!-- QR MODAL -->
+    <div id="qrModal" class="modal-overlay" onclick="closeModal()">
+        <div class="qr-container" onclick="event.stopPropagation()">
             <h2 style="color:#000; text-shadow:none;">SCAN TARGET</h2>
             <div id="qrTarget"></div>
-            <button class="btn btn-secondary" onclick="closeModal('qrModal')" style="color:#000; border-color:#000; margin-top:20px;">DONE</button>
-        </div>
-    </div>
-
-    <div id="historyModal" class="modal-overlay" onclick="closeModal('historyModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>MISSION LOGS</h2>
-            <div id="historyList" style="margin-bottom: 20px;"></div>
-            <button class="btn btn-secondary" onclick="closeModal('historyModal')">CLOSE</button>
-        </div>
-    </div>
-
-    <div id="dataModal" class="modal-overlay" onclick="closeModal('dataModal')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2>SYSTEM DATA</h2>
-            <button class="btn btn-secondary" onclick="exportData()">💾 BACKUP DATA</button>
-            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📂 RESTORE DATA</button>
-            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
-            <button class="btn btn-secondary" style="margin-top:20px" onclick="closeModal('dataModal')">CLOSE</button>
+            <button class="btn btn-secondary" onclick="closeModal()" style="color:#000; border-color:#000; margin-top:20px;">DONE</button>
         </div>
     </div>
 
     <script>
-        // --- 1. DATA (50+ WORDS) ---
-        const PRESET_NAMES = ["Alex", "Sam", "Jordan", "Casey", "Riley", "Morgan"];
-        const GAME_DATA = {
-            "Food": [
-                { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
-                { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
-                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" },
-                { w: "Pancakes", h: "Breakfast / Syrup" }, { w: "Popcorn", h: "Movie / Salt" }
-            ],
-            "Animals": [
-                { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
-                { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
-                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" },
-                { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }
-            ],
-            "Jobs": [
-                { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
-                { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
-                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" },
-                { w: "Astronaut", h: "Space / Suit" }, { w: "Farmer", h: "Crops / Animals" }
-            ],
-            "Places": [
-                { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
-                { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
-                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" },
-                { w: "Airport", h: "Planes / Travel" }, { w: "Cinema", h: "Movies / Popcorn" }
-            ],
-            "Tech": [
-                { w: "iPhone", h: "Apple / Call" }, { w: "Laptop", h: "Keyboard / Work" }, { w: "Robot", h: "AI / Metal" },
-                { w: "Drone", h: "Fly / Camera" }, { w: "VR Headset", h: "Goggles / 3D" }, { w: "Internet", h: "Web / Wifi" },
-                { w: "Bitcoin", h: "Crypto / Money" }, { w: "Tesla", h: "Electric / Car" }, { w: "Satellite", h: "Space / Signal" }
-            ],
-            "Movies": [
-                { w: "Star Wars", h: "Space / Swords" }, { w: "Harry Potter", h: "Magic / Wizard" }, { w: "Titanic", h: "Ship / Ice" },
-                { w: "Avengers", h: "Heroes / Marvel" }, { w: "Jurassic Park", h: "Dinos / T-Rex" }, { w: "Batman", h: "Bat / Hero" },
-                { w: "Frozen", h: "Ice / Song" }, { w: "Shrek", h: "Ogre / Green" }, { w: "Matrix", h: "Code / Red Pill" }
-            ]
-        };
+        // --- PRESET NAMES (EDIT HERE) ---
+        const PRESET_NAMES = [
+            "CYPHER", "NEO", "TRINITY", "GHOST", "VIPER", "ECHO", "SHADE", "RAVEN", 
+            "WOLF", "ZERO", "NIX", "JINX", "BLAZE", "FURY", "STORM"
+        ];
 
-        // --- 2. ENGINE ---
-        let state = {
-            step: 'LOBBY', players: [], passMode: false, passIndex: 0,
-            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
-            startTime: null, votedIndex: null, customWords: [],
-            speakerQueue: [], currentSpeaker: null
-        };
-
-        const app = document.getElementById('app');
-        const params = new URLSearchParams(window.location.search);
-        const SFX_URLS = { click: 'https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3', scan: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3', reveal: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-click-900.mp3', alarm: 'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3', win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3', lose: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3', decode: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-digital-text-readout-997.mp3' };
-        
-        function playSfx(key) { try { if(SFX_URLS[key]) { const s = new Audio(SFX_URLS[key]); s.volume = 0.4; s.play().catch(e=>{}); } } catch(e){} }
-        function pulse(ms = 20) { if (navigator.vibrate) navigator.vibrate(ms); }
-        async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
-
-        function init() {
-            initMatrix();
-            try {
-                if (params.has('data')) renderPlayerScreen();
-                else if (params.has('room')) renderRoomSelection();
-                else {
-                    let saved = null;
-                    try { saved = localStorage.getItem('imposterState'); } catch(e){}
-                    if (saved) state = { ...state, ...JSON.parse(saved) };
-                    if(state.step !== 'LOBBY') renderHostScreen(); else renderLobby();
-                }
-            } catch(e) { wipeData(); }
-        }
-
+        // --- MATRIX RAIN EFFECT ---
         const initMatrix = () => {
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            const chars = '01XY789ABCDEFZ'; const fontSize = 14;
-            const columns = canvas.width / fontSize; const drops = Array(Math.ceil(columns)).fill(1);
-            setInterval(() => {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテト';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = [];
+            for(let x = 0; x < columns; x++) drops[x] = 1;
+
+            const draw = () => {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#0F0';
+                ctx.font = fontSize + 'px monospace';
                 for(let i = 0; i < drops.length; i++) {
                     const text = chars.charAt(Math.floor(Math.random() * chars.length));
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
                     if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 }
-            }, 33);
+            };
+            setInterval(draw, 33);
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         };
 
-        // --- 3. LOGIC ---
-        function addPlayer(name) {
-            const input = document.getElementById('nameInput');
-            const val = name || input.value.trim().toUpperCase();
-            if (!val) return;
-            if (state.players.includes(val)) return alert("NAME EXISTS");
-            playSfx('click');
-            state.players.push(val);
-            if(input) input.value = '';
-            saveState(); renderLobby();
-            if(!name) setTimeout(() => { document.getElementById('nameInput').focus(); }, 10);
+        // --- EXPANDED GAME DATA ---
+        const GAME_DATA = {
+            "Food": [
+                { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
+                { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
+                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" },
+                { w: "Popcorn", h: "Movie / Corn" }, { w: "Donut", h: "Round / Hole" }, { w: "Chocolate", h: "Sweet / Brown" }, { w: "Pancakes", h: "Breakfast / Syrup" }
+            ],
+            "Animals": [
+                { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
+                { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
+                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" },
+                { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }, { w: "Octopus", h: "8 Arms / Sea" }, { w: "Owl", h: "Hoot / Wise" }
+            ],
+            "Jobs": [
+                { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
+                { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
+                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" },
+                { w: "Cop", h: "Badge / Law" }, { w: "Farmer", h: "Crops / Animals" }, { w: "Astronaut", h: "Space / Suit" }, { w: "Detective", h: "Magnify / Clues" }
+            ],
+            "Places": [
+                { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
+                { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
+                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" },
+                { w: "Cinema", h: "Movies / Corn" }, { w: "Museum", h: "Old / Art" }, { w: "Airport", h: "Planes / Travel" }, { w: "Graveyard", h: "Dead / Spooky" }
+            ],
+            "Household": [
+                { w: "Chair", h: "Sit / Legs" }, { w: "Toaster", h: "Bread / Hot" }, { w: "Phone", h: "Call / Screen" },
+                { w: "Shoe", h: "Foot / Walk" }, { w: "Umbrella", h: "Rain / Dry" }, { w: "Mirror", h: "Reflect / Glass" },
+                { w: "Fork", h: "Eat / Prongs" }, { w: "Laptop", h: "Computer / Fold" }, { w: "Bed", h: "Sleep / Soft" }, { w: "Lamp", h: "Light / Switch" },
+                { w: "Toilet", h: "Flush / Bathroom" }, { w: "Fridge", h: "Cold / Food" }, { w: "Key", h: "Lock / Open" }, { w: "Clock", h: "Time / Tick" }
+            ],
+            "Vehicles": [
+                { w: "Car", h: "Drive / Wheels" }, { w: "Bicycle", h: "Pedal / Two" }, { w: "Train", h: "Track / Choo" }, { w: "Boat", h: "Water / Float" },
+                { w: "Helicopter", h: "Spin / Air" }, { w: "Tank", h: "War / Heavy" }, { w: "Submarine", h: "Underwater" }, { w: "Skateboard", h: "Tricks / Push" },
+                { w: "Bus", h: "Public / Big" }, { w: "Motorcycle", h: "Fast / Helmet" }
+            ],
+            "Sports": [
+                { w: "Soccer", h: "Kick / Goal" }, { w: "Basketball", h: "Hoop / Bounce" }, { w: "Tennis", h: "Racket / Net" }, { w: "Golf", h: "Club / Hole" },
+                { w: "Boxing", h: "Punch / Ring" }, { w: "Swimming", h: "Water / Pool" }, { w: "Baseball", h: "Bat / Base" }, { w: "Volleyball", h: "Beach / Spike" },
+                { w: "Skiing", h: "Snow / Mountain" }, { w: "Chess", h: "Board / Brain" }
+            ],
+            "Nature": [
+                { w: "Tree", h: "Leaves / Wood" }, { w: "Volcano", h: "Lava / Hot" }, { w: "Rain", h: "Water / Sky" }, { w: "Sun", h: "Hot / Star" },
+                { w: "Moon", h: "Night / Space" }, { w: "Cloud", h: "White / Fluffy" }, { w: "Flower", h: "Rose / Smell" }, { w: "Mountain", h: "High / Climb" },
+                { w: "River", h: "Water / Flow" }, { w: "Desert", h: "Sand / Dry" }
+            ],
+            "Electronics": [
+                { w: "Camera", h: "Photo / Lens" }, { w: "Headphones", h: "Music / Ears" }, { w: "Drone", h: "Fly / Remote" }, { w: "Battery", h: "Power / Charge" },
+                { w: "Keyboard", h: "Type / Keys" }, { w: "Mouse", h: "Click / Scroll" }, { w: "Robot", h: "Metal / AI" }, { w: "Tablet", h: "Touch / Screen" },
+                { w: "Microphone", h: "Voice / Record" }, { w: "Console", h: "Game / Play" }
+            ],
+            "Clothes": [
+                { w: "Hat", h: "Head / Cap" }, { w: "Jeans", h: "Pants / Denim" }, { w: "Shirt", h: "Torso / Wear" }, { w: "Socks", h: "Feet / Warm" },
+                { w: "Glasses", h: "Eyes / See" }, { w: "Watch", h: "Wrist / Time" }, { w: "Coat", h: "Winter / Warm" }, { w: "Gloves", h: "Hands / Fingers" },
+                { w: "Scarf", h: "Neck / Wool" }, { w: "Belt", h: "Waist / Hold" }
+            ]
+        };
+
+        // --- AUDIO SYSTEM ---
+        const SFX_URLS = {
+            click: 'https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3',
+            scan: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3',
+            reveal: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-click-900.mp3',
+            alarm: 'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3',
+            win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
+            lose: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3',
+            roulette: 'https://assets.mixkit.co/sfx/preview/mixkit-tech-click-1140.mp3' 
+        };
+
+        function playSfx(key) { 
+            try { 
+                if(SFX_URLS[key]) {
+                    const s = new Audio(SFX_URLS[key]);
+                    s.volume = 0.5; 
+                    s.play().catch(e => {}); 
+                }
+            } catch(e) {} 
         }
 
-        function removePlayer(i) { state.players.splice(i, 1); saveState(); renderLobby(); }
+        function pulse(ms = 20) { if (navigator.vibrate) navigator.vibrate(ms); }
+        async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
+
+        // --- STATE & CORE ---
+        let state = {
+            step: 'LOBBY', players: [], passMode: false, passIndex: 0,
+            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
+            startTime: null, votedIndex: null, customWords: [],
+            history: [], startingPlayer: null
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const app = document.getElementById('app');
+
+        function init() {
+            initMatrix();
+            try {
+                if (params.has('data')) {
+                    renderPlayerScreen();
+                } else if (params.has('room')) {
+                    renderRoomSelection();
+                } else {
+                    let saved = null;
+                    try { saved = localStorage.getItem('imposterState'); } catch(e) {}
+                    if (saved) state = { ...state, ...JSON.parse(saved) };
+                    // Ensure history exists if loading old save
+                    if (!state.history) state.history = [];
+                    if(state.step !== 'LOBBY') renderHostScreen(); else renderLobby();
+                }
+            } catch(err) {
+                app.innerHTML = `<h1>ERROR</h1><p>Resetting...</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>`;
+            }
+        }
+
+        // --- HOST LOGIC ---
+        function addPlayer(presetName = null) {
+            const input = document.getElementById('nameInput');
+            const name = presetName || input.value.trim().toUpperCase();
+            if (!name) return;
+            if (state.players.includes(name)) return alert("Name taken!");
+            playSfx('click');
+            state.players.push(name);
+            if(!presetName) input.value = '';
+            saveState();
+            renderLobby();
+            if(!presetName) setTimeout(() => { document.getElementById('nameInput').focus(); }, 10);
+        }
+
+        function removePlayer(index) { state.players.splice(index, 1); saveState(); renderLobby(); }
         function togglePassMode() { state.passMode = !state.passMode; playSfx('click'); renderLobby(); }
-        
+        function resetGame() { playSfx('click'); state.step = 'LOBBY'; state.topic = null; state.secretWord = null; state.imposterIndex = null; state.startingPlayer = null; saveState(); renderLobby(); }
+
         function startGame(topicKey) {
             if (state.players.length < 3) return alert("Need 3+ players!");
             playSfx('scan');
             state.topic = topicKey;
+
             if (topicKey === 'CUSTOM') {
-                const input = prompt("Words (comma separated):");
+                const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
                 if (!input) return;
-                state.customWords = input.split(',').map(w => w.trim()).filter(w => w.length);
-                if (state.customWords.length < 2) return alert("Need 2+ words");
+                state.customWords = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
+                if (state.customWords.length < 2) return alert("Need 2+ words!");
                 state.secretWord = state.customWords[Math.floor(Math.random() * state.customWords.length)];
-                state.secretHint = "Custom";
+                state.secretHint = "Custom Word";
             } else {
-                const list = GAME_DATA[topicKey];
-                const item = list[Math.floor(Math.random() * list.length)];
-                state.secretWord = item.w; state.secretHint = item.h;
+                const dataList = GAME_DATA[topicKey];
+                const item = dataList[Math.floor(Math.random() * dataList.length)];
+                state.secretWord = item.w;
+                state.secretHint = item.h;
             }
+
             state.imposterIndex = Math.floor(Math.random() * state.players.length);
+            
+            // RNG First Player
+            state.startingPlayer = state.players[Math.floor(Math.random() * state.players.length)];
+
+            state.startTime = null;
+            state.votedIndex = null;
             state.step = state.passMode ? 'PASS_PREP' : 'QR_PREP';
             state.passIndex = 0;
-            saveState(); renderHostScreen();
+            saveState();
+            renderHostScreen();
         }
 
-        function startRound() {
-            playSfx('alarm');
-            state.step = 'GAME';
-            state.startTime = Date.now();
-            // SETUP TURN ORDER
-            let queue = [...state.players];
-            for (let i = queue.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [queue[i], queue[j]] = [queue[j], queue[i]]; }
-            state.speakerQueue = queue;
-            state.currentSpeaker = null;
-            saveState(); renderHostScreen(); requestWakeLock();
-            nextSpeaker();
-        }
-
-        function nextSpeaker() {
-            if (state.speakerQueue.length === 0) { state.currentSpeaker = "ALL DONE"; playSfx('alarm'); renderGame(); return; }
-            playSfx('decode');
-            const next = state.speakerQueue.pop();
-            let el = document.getElementById('speakerDisp');
-            if(!el) { state.currentSpeaker = next; renderGame(); return; }
-            let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; let iter = 0;
-            let interval = setInterval(() => {
-                el.innerText = next.split('').map((l, i) => { if (i < iter) return next[i]; return chars[Math.floor(Math.random() * chars.length)]; }).join('');
-                if(iter >= next.length) { clearInterval(interval); state.currentSpeaker = next; saveState(); renderGame(); playSfx('reveal'); }
-                iter += 1/3;
-            }, 30);
+        function startRound() { 
+            playSfx('alarm'); 
+            state.step = 'GAME'; 
+            state.startTime = Date.now(); 
+            saveState(); 
+            renderHostScreen(); 
+            requestWakeLock();
+            // Trigger animation for first player
+            setTimeout(animateStartingPlayer, 500);
         }
 
         function startVoting() { playSfx('alarm'); state.step = 'VOTING'; saveState(); renderHostScreen(); }
+        function selectVote(i) { playSfx('click'); state.votedIndex = (state.votedIndex === i) ? null : i; renderHostScreen(); }
+
         function submitVote() {
-            if (state.votedIndex === null) return alert("Select someone!");
+            if (state.votedIndex === null) return alert("Select the suspect!");
             playSfx('reveal');
             state.step = 'RESULTS';
+            
+            // SAVE TO HISTORY
             const imposterCaught = (state.votedIndex === state.imposterIndex);
-            saveHistory(imposterCaught);
-            saveState(); renderHostScreen();
-            setTimeout(() => { playSfx(imposterCaught ? 'win' : 'lose'); if(imposterCaught) try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} }, 500);
+            state.history.unshift({
+                date: new Date().toLocaleString(),
+                topic: state.topic,
+                word: state.secretWord,
+                imposter: state.players[state.imposterIndex],
+                winner: imposterCaught ? "CITIZENS" : "IMPOSTER"
+            });
+            // Limit history to 20
+            if(state.history.length > 20) state.history.pop();
+
+            saveState();
+            renderHostScreen();
+            
+            setTimeout(() => { 
+                playSfx(imposterCaught ? 'win' : 'lose'); 
+                if(imposterCaught) try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} 
+            }, 500);
         }
 
-        function resetGame() { playSfx('click'); state.step = 'LOBBY'; state.topic = null; state.secretWord = null; state.imposterIndex = null; saveState(); renderLobby(); }
         function saveState() { try { if(!params.has('data') && !params.has('room')) localStorage.setItem('imposterState', JSON.stringify(state)); } catch(e) {} }
 
-        // --- 4. RENDERERS ---
+        // --- RENDERERS ---
         function renderHostScreen() {
             if(state.step === 'LOBBY') renderLobby();
             else if(state.step === 'QR_PREP') renderQrPrep();
@@ -360,32 +489,41 @@
             else if(state.step === 'GAME') renderGame();
             else if(state.step === 'VOTING') renderVoting();
             else if(state.step === 'RESULTS') renderResults();
+            else if(state.step === 'HISTORY') renderHistory();
+            else if(state.step === 'SETTINGS') renderSettings();
         }
 
         function renderLobby() {
+            // Filter out presets already added
+            const availablePresets = PRESET_NAMES.filter(n => !state.players.includes(n));
+
             app.innerHTML = `
-                <div style="position:absolute; top:10px; right:10px;">
-                    <button class="btn btn-secondary" style="width:40px; height:40px; padding:0;" onclick="openModal('historyModal')">📜</button>
-                    <button class="btn btn-secondary" style="width:40px; height:40px; padding:0;" onclick="openModal('dataModal')">💾</button>
-                </div>
                 <h1>THE IMPOSTER</h1>
-                <p>ULTIMATE EDITION</p>
-                
+                <p>CYBERPUNK EDITION</p>
                 <div class="input-group">
                     <input type="text" id="nameInput" placeholder="ADD AGENT NAME" autocomplete="off" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button onclick="addPlayer()" style="background:none; border:none; color:var(--primary); font-size:1.5rem;">+</button>
                 </div>
-                <div class="grid-names" style="margin-bottom:10px; opacity:0.8;">
-                    ${PRESET_NAMES.map(n => `<div class="name-chip" style="border-color:var(--accent); color:var(--accent)" onclick="addPlayer('${n}')">+ ${n}</div>`).join('')}
+                
+                <div style="margin-bottom:15px; display:flex; flex-wrap:wrap; justify-content:center; gap:5px;">
+                   ${availablePresets.map(p => `<div class="preset-chip" onclick="addPlayer('${p}')">+ ${p}</div>`).join('')}
                 </div>
+
                 <div class="grid-names">
                     ${state.players.map((p, i) => `<div class="name-chip" onclick="removePlayer(${i})">${p}</div>`).join('')}
                 </div>
+                
                 <div class="toggle-wrapper">
                     <span>📱 QR MODE</span>
                     <label class="switch"><input type="checkbox" ${state.passMode ? 'checked' : ''} onchange="togglePassMode()"><span class="slider"></span></label>
                     <span>🤝 PASS MODE</span>
                 </div>
+                
+                <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+                    <button class="btn btn-secondary btn-small" onclick="state.step='HISTORY'; renderHostScreen();">HISTORY</button>
+                    <button class="btn btn-secondary btn-small" onclick="state.step='SETTINGS'; renderHostScreen();">DATA</button>
+                </div>
+
                 ${state.players.length >= 3 ? `
                     <div class="topic-grid">
                         ${Object.keys(GAME_DATA).map(t => `<div class="topic-card" onclick="startGame('${t}')">${t}</div>`).join('')}
@@ -395,10 +533,83 @@
             `;
         }
 
+        function renderSettings() {
+            app.innerHTML = `
+                <h2>DATA MANAGEMENT</h2>
+                <div style="margin: 30px 0;">
+                    <p>Backup or Restore Mission Data</p>
+                    <button class="btn" onclick="exportData()">DOWNLOAD DATA</button>
+                    
+                    <div style="position:relative; margin-top:15px;">
+                        <button class="btn btn-secondary">UPLOAD DATA</button>
+                        <input type="file" onchange="importData(this)" style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer;">
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="if(confirm('Wipe all data?')){localStorage.clear(); location.reload();}" style="margin-top:40px;">FACTORY RESET</button>
+                    
+                    <button class="btn btn-secondary" onclick="state.step='LOBBY'; renderHostScreen();" style="margin-top:20px;">BACK</button>
+                </div>
+            `;
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "imposter_backup_" + Date.now() + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const loaded = JSON.parse(e.target.result);
+                    if(loaded.players && loaded.history) {
+                        state = loaded;
+                        saveState();
+                        alert("Data Loaded Successfully");
+                        state.step = 'LOBBY';
+                        renderHostScreen();
+                    } else { alert("Invalid File"); }
+                } catch(err) { alert("Error reading file"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderHistory() {
+            app.innerHTML = `
+                <h2>MISSION LOGS</h2>
+                <div style="max-height:60vh; overflow-y:auto; width:100%; margin: 20px 0;">
+                    ${state.history.length === 0 ? '<p>No records found.</p>' : state.history.map(h => `
+                        <div class="history-item">
+                            <div>
+                                <strong style="color:white">${h.topic}</strong>: ${h.word}<br>
+                                <span style="opacity:0.6">${h.date}</span>
+                            </div>
+                            <div style="text-align:right">
+                                <span class="${h.winner === 'CITIZENS' ? 'history-win' : 'history-loss'}">${h.winner}</span><br>
+                                <span style="font-size:0.7rem; color:var(--secondary)">Imp: ${h.imposter}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn btn-secondary" onclick="state.step='LOBBY'; renderHostScreen();">BACK</button>
+            `;
+        }
+
         function renderQrPrep() {
             app.innerHTML = `
                 <h2>Topic: ${state.topic}</h2>
-                <button class="btn" style="border-color:var(--accent); color:var(--accent); padding:20px; margin-bottom:20px;" onclick="showRoomQR()">🏠 SHOW ROOM QR</button>
+                <div class="grid-names" style="gap:15px; margin-top:30px;">
+                    <button class="btn" style="border-color:var(--accent); color:var(--accent); padding:25px;" onclick="showRoomQR()">
+                        🏠 SHOW ROOM QR <br><span style="font-size:0.8rem">(Scan once for everyone)</span>
+                    </button>
+                </div>
+                <p style="margin:20px 0;">-- OR INDIVIDUAL --</p>
                 <div class="grid-names">
                     ${state.players.map((p, i) => `<button class="btn btn-secondary" onclick="showPlayerQR(${i})" style="width:auto; padding:10px;">📱 ${p}</button>`).join('')}
                 </div>
@@ -411,13 +622,84 @@
             app.innerHTML = `
                 <h2 style="color:var(--primary)">MISSION ACTIVE</h2>
                 <p>Topic: <strong style="color:white">${state.topic}</strong></p>
-                <div class="speaker-box">
-                    <div style="font-size:0.8rem; letter-spacing:2px; margin-bottom:5px;">CURRENT SPEAKER</div>
-                    <div id="speakerDisp" class="speaker-name">${state.currentSpeaker || "INITIALIZING..."}</div>
+                
+                <div id="starter-box" class="turn-display">
+                    STARTS: <span id="starter-name">DECRYPTING...</span>
                 </div>
-                ${state.speakerQueue.length > 0 ? `<button class="btn" onclick="nextSpeaker()">>>> NEXT SPEAKER</button>` : `<p style="color:var(--accent)">ALL AGENTS HAVE SPOKEN</p>`}
-                <div style="margin-top:30px"><button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button></div>
+
+                <div id="timer" style="font-size: 5rem; font-family:var(--font); color:var(--text); text-shadow: 0 0 20px var(--primary); margin: 10px 0;">0:00</div>
+                
+                <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">🎲 SPIN NEXT SPEAKER</button>
+
+                <div style="margin-top:40px;">
+                    <button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button>
+                </div>
             `;
+            const timerEl = document.getElementById('timer');
+            const update = () => {
+                if(state.step !== 'GAME') return;
+                const diff = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = Math.floor(diff / 60);
+                const s = (diff % 60).toString().padStart(2, '0');
+                if(timerEl) timerEl.innerText = `${m}:${s}`;
+                requestAnimationFrame(update);
+            };
+            update();
+        }
+
+        function animateStartingPlayer() {
+            const el = document.getElementById('starter-name');
+            const box = document.getElementById('starter-box');
+            if(!el) return;
+            
+            box.classList.add('animate');
+            let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let iterations = 0;
+            const target = state.startingPlayer;
+            
+            const interval = setInterval(() => {
+                playSfx('roulette');
+                el.innerText = target.split('').map((letter, index) => {
+                    if(index < iterations) return target[index];
+                    return chars[Math.floor(Math.random() * chars.length)]
+                }).join('');
+                
+                if(iterations >= target.length){ 
+                    clearInterval(interval);
+                    box.classList.remove('animate');
+                    box.style.background = 'rgba(0, 255, 0, 0.2)';
+                    box.style.borderColor = 'var(--primary)';
+                    box.style.color = 'var(--primary)';
+                }
+                
+                // Slowly reveal
+                if(Math.random() > 0.5) iterations += 0.5; 
+            }, 50);
+        }
+
+        function spinNextPlayer() {
+            const el = document.getElementById('starter-name');
+            const box = document.getElementById('starter-box');
+            box.style.background = 'transparent';
+            box.style.borderColor = 'var(--accent)';
+            box.style.color = 'var(--accent)';
+            box.classList.add('animate');
+            box.innerHTML = `NEXT: <span id="spin-target">...</span>`;
+            
+            let spinCount = 0;
+            const spinInt = setInterval(() => {
+                playSfx('roulette');
+                const randomP = state.players[Math.floor(Math.random() * state.players.length)];
+                document.getElementById('spin-target').innerText = randomP;
+                spinCount++;
+                if(spinCount > 15) {
+                    clearInterval(spinInt);
+                    box.classList.remove('animate');
+                    box.style.background = 'rgba(255, 255, 0, 0.1)';
+                    box.style.color = 'yellow';
+                    box.style.borderColor = 'yellow';
+                }
+            }, 80);
         }
 
         function renderVoting() {
@@ -425,7 +707,7 @@
                 <h1 style="color:var(--secondary); animation:pulse-red 2s infinite;">VOTING PHASE</h1>
                 <p>Who is the Imposter?</p>
                 <div class="voting-grid">
-                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="state.votedIndex = (state.votedIndex === ${i}) ? null : ${i}; renderHostScreen(); playSfx('click');"><div style="font-size:2rem; margin-bottom:10px;">👤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
+                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="selectVote(${i})"><div style="font-size:2rem; margin-bottom:10px;">👤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
                 </div>
                 <button class="btn btn-danger" onclick="submitVote()">EXECUTE SELECTED</button>
             `;
@@ -434,89 +716,140 @@
         function renderResults() {
             const imposterCaught = (state.votedIndex === state.imposterIndex);
             const imposterName = state.players[state.imposterIndex];
+            const resultTitle = imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS";
+            const bannerClass = imposterCaught ? "win-citizen" : "win-imposter";
+            
             app.innerHTML = `
-                <div class="result-banner ${imposterCaught ? 'win-citizen' : 'win-imposter'}">
-                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS"}</h1>
+                <div class="result-banner ${bannerClass}">
+                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${resultTitle}</h1>
                     <p style="color:inherit; margin:0;">${imposterCaught ? "Glitch Neutralized" : "System Compromised"}</p>
                 </div>
                 <div style="display:flex; gap:10px; text-align:left;">
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET WORD</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>REAL IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
                 </div>
                 <button class="btn" onclick="resetGame()">NEW MISSION</button>
             `;
         }
 
-        // --- EXTRAS: QR, HISTORY, DATA ---
+        // --- ROOM/PLAYER LOGIC ---
+        function renderRoomSelection() {
+            let roomData;
+            try { roomData = JSON.parse(atob(params.get('room'))); } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
+            
+            const savedName = localStorage.getItem('imposter_id_' + roomData.id);
+            if(savedName) {
+                const p = roomData.players.find(x => x.name === savedName);
+                if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, roomData.topic);
+            }
+
+            app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">
+                ${roomData.players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${roomData.topic}', '${roomData.id}')"><strong>${p.name}</strong><span>👉</span></button>`).join('')}
+            </div>`;
+        }
+
+        function claimIdentity(name, role, word, hint, topic, roomId) {
+            if(confirm(`Are you ${name}?`)) {
+                localStorage.setItem('imposter_id_' + roomId, name);
+                renderPlayerIdentity(name, role, word, hint, topic);
+            }
+        }
+
+        function renderPlayerIdentity(name, role, word, hint, topic) {
+            const isImposter = (role === 'IMPOSTER');
+            const displayWord = isImposter ? "YOU ARE THE<br>IMPOSTER" : word;
+            const displayHint = isImposter ? ("HINT: " + hint) : "Citizen";
+            const color = isImposter ? 'color:var(--secondary)' : 'color:var(--primary)';
+
+            app.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">
+                    <span>AGENT: <strong>${name}</strong></span><span style="font-size:0.8rem; opacity:0.7;">${topic}</span>
+                </div>
+                <div class="secret-box" id="mobileBox">
+                    <div class="fingerprint-icon">☝️</div>
+                    <div class="secret-content" style="${color}">${displayWord}</div>
+                    ${isImposter ? `<div class="hint-text">${displayHint}</div>` : ''}
+                </div>
+                <p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>
+                <div style="margin-top:50px; border-top:1px solid #333; padding-top:20px;">
+                    <p style="font-size:0.8rem; margin-bottom:5px;">TOOLS</p>
+                    <button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">🗳️ OPEN VOTING GUIDE</button>
+                </div>
+            `;
+            bindRevealEvents('mobileBox', isImposter);
+        }
+
+        function renderPlayerScreen() {
+            let data;
+            try { data = JSON.parse(atob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; }
+            renderPlayerIdentity(data.name, data.role, data.word, data.hint, data.topic);
+        }
+
+        // --- UTILS ---
+        function bindRevealEvents(id, isImposter) {
+            const box = document.getElementById(id);
+            if(!box) return;
+            const reveal = (e) => {
+                if(e.cancelable) e.preventDefault();
+                if(!box.classList.contains('revealing')) {
+                    playSfx('reveal');
+                    if(isImposter) pulse([100, 50, 100]); else pulse(20);
+                }
+                box.classList.add('revealing');
+            };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
+            ['touchstart', 'mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false}));
+            ['touchend', 'mouseup', 'mouseleave'].forEach(evt => box.addEventListener(evt, hide));
+        }
+
         function showPlayerQR(i) {
-            playSfx('click'); const p = state.players[i]; const isImp = (i === state.imposterIndex);
+            playSfx('click');
+            const p = state.players[i];
+            const isImp = (i === state.imposterIndex);
             const payload = { name: p, topic: state.topic, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
             generateQR(payload, `Scan for ${p}`, 'data');
         }
+
         function showRoomQR() {
-            playSfx('click'); const id = Date.now().toString();
-            const payload = { id: id, topic: state.topic, players: state.players.map((p, i) => { const isImp = (i === state.imposterIndex); return { name: p, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null }; }) };
+            playSfx('click');
+            const id = Date.now().toString();
+            const payload = {
+                id: id, topic: state.topic,
+                players: state.players.map((p, i) => {
+                    const isImp = (i === state.imposterIndex);
+                    return { name: p, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
+                })
+            };
             generateQR(payload, "Scan to Join Room", 'room');
         }
+
         function generateQR(payload, text, param) {
             const url = `${window.location.origin}${window.location.pathname}?${param}=${btoa(JSON.stringify(payload))}`;
-            const target = document.getElementById('qrTarget'); target.innerHTML = '';
-            document.querySelector('#qrModal h2').innerText = text; new QRCode(target, { text: url, width: 250, height: 250 });
-            openModal('qrModal');
+            const target = document.getElementById('qrTarget');
+            target.innerHTML = '';
+            document.querySelector('#qrModal h2').innerText = text;
+            new QRCode(target, { text: url, width: 250, height: 250 });
+            document.getElementById('qrModal').classList.add('active');
         }
-        
-        function saveHistory(win) {
-            const log = JSON.parse(localStorage.getItem('imposterHistory')) || [];
-            log.unshift({ date: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), topic: state.topic, word: state.secretWord, imposter: state.players[state.imposterIndex], win: win });
-            if(log.length > 20) log.pop();
-            localStorage.setItem('imposterHistory', JSON.stringify(log));
-        }
-        function renderHistoryList() {
-            const log = JSON.parse(localStorage.getItem('imposterHistory')) || [];
-            const el = document.getElementById('historyList');
-            if(log.length === 0) { el.innerHTML = "<p>NO LOGS FOUND</p>"; return; }
-            el.innerHTML = log.map(g => `<div class="history-item"><div><div style="font-weight:bold">${g.topic} - ${g.word}</div><div style="font-size:0.8rem; opacity:0.6">${g.date}</div></div><div style="text-align:right"><div class="${g.win ? 'history-win' : 'history-lose'}">${g.win ? 'CITIZENS' : 'IMPOSTER'}</div><div style="font-size:0.8rem">Imp: ${g.imposter}</div></div></div>`).join('');
-        }
-        function exportData() {
-            const data = { state: localStorage.getItem('imposterState'), history: localStorage.getItem('imposterHistory') };
-            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'imposter-backup.json'; a.click();
-        }
-        function importData(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => { try { const data = JSON.parse(ev.target.result); if(data.state) localStorage.setItem('imposterState', data.state); if(data.history) localStorage.setItem('imposterHistory', data.history); alert("Data Restored!"); location.reload(); } catch(err) { alert("Invalid File"); } };
-            reader.readAsText(file);
-        }
-        function wipeData() { if(confirm("FACTORY RESET?")) { localStorage.clear(); location.reload(); } }
-        function openModal(id) { document.getElementById(id).classList.add('active'); if(id === 'historyModal') renderHistoryList(); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // --- PLAYER CLIENT ---
-        function renderRoomSelection() {
-            let roomData; try { roomData = JSON.parse(atob(params.get('room'))); } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
-            const savedName = localStorage.getItem('imposter_id_' + roomData.id);
-            if(savedName) { const p = roomData.players.find(x => x.name === savedName); if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, roomData.topic); }
-            app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">${roomData.players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="if(confirm('Are you ${p.name}?')){localStorage.setItem('imposter_id_${roomData.id}', '${p.name}'); renderPlayerIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${roomData.topic}');}"><strong>${p.name}</strong><span>👉</span></button>`).join('')}</div>`;
+        function closeModal() { playSfx('click'); document.getElementById('qrModal').classList.remove('active'); }
+
+        function renderPassPrep() {
+            const p = state.players[state.passIndex];
+            app.innerHTML = `<h2>PASS DEVICE</h2><h1 style="font-size:2.5rem; color:var(--primary); margin:30px 0;">${p}</h1><button class="btn" onclick="renderPassReveal()">I AM ${p}</button>`;
         }
-        function renderPlayerIdentity(name, role, word, hint, topic) {
-            const isImposter = (role === 'IMPOSTER');
-            app.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;"><span>AGENT: <strong>${name}</strong></span><span style="font-size:0.8rem; opacity:0.7;">${topic}</span></div><div class="secret-box" id="mobileBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${isImposter?'color:var(--secondary)':'color:var(--primary)'}">${isImposter?"YOU ARE THE<br>IMPOSTER":word}</div>${isImposter?`<div class="hint-text">HINT: ${hint}</div>`:''}</div><p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p><div style="margin-top:50px; border-top:1px solid #333; padding-top:20px;"><p style="font-size:0.8rem; margin-bottom:5px;">TOOLS</p><button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">🗳️ OPEN VOTING GUIDE</button></div>`;
-            const box = document.getElementById('mobileBox');
-            const reveal = (e) => { if(e.cancelable) e.preventDefault(); if(!box.classList.contains('revealing')) { playSfx('reveal'); if(isImposter) pulse([100,50,100]); else pulse(20); } box.classList.add('revealing'); };
-            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
-            ['touchstart','mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false})); ['touchend','mouseup','mouseleave'].forEach(evt => box.addEventListener(evt, hide));
-        }
-        function renderPlayerScreen() { let data; try { data = JSON.parse(atob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; } renderPlayerIdentity(data.name, data.role, data.word, data.hint, data.topic); }
-        // Pass Mode (Legacy)
-        function renderPassPrep() { const p = state.players[state.passIndex]; app.innerHTML = `<h2>PASS DEVICE</h2><h1 style="font-size:2.5rem; color:var(--primary); margin:30px 0;">${p}</h1><button class="btn" onclick="renderPassReveal()">I AM ${p}</button>`; }
         function renderPassReveal() {
             const isImp = (state.passIndex === state.imposterIndex);
-            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${isImp?'color:var(--secondary)':'color:var(--primary)'}">${isImp?"YOU ARE THE<br>IMPOSTER":state.secretWord}</div>${isImp?`<div class="hint-text">HINT: ${state.secretHint}</div>`:''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
+            const word = isImp ? "YOU ARE THE<br>IMPOSTER" : state.secretWord;
+            const hint = isImp ? ("HINT: " + state.secretHint) : "Citizen";
+            const color = isImp ? 'color:var(--secondary)' : 'color:var(--primary)';
+            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${color}">${word}</div>${isImp ? `<div class="hint-text">${hint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
+            bindRevealEvents('passBox', isImp);
+            // Allow clicking next after revealing
             const box = document.getElementById('passBox');
-            const reveal = (e) => { if(e.cancelable) e.preventDefault(); if(!box.classList.contains('revealing')) { playSfx('reveal'); if(isImp) pulse([100,50,100]); else pulse(20); } box.classList.add('revealing'); document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
-            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
-            ['touchstart','mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false})); ['touchend','mouseup','mouseleave'].forEach(evt => box.addEventListener(evt, hide));
+            const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
+            box.addEventListener('mousedown', enableBtn);
+            box.addEventListener('touchstart', enableBtn);
         }
 
         init();
