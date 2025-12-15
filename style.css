@@ -140,3 +140,37 @@ input:checked + .slider:before { transform: translateX(26px); }
 }
 .modal-overlay.active { display: flex; animation: turnOn 0.2s forwards; }
 .qr-container { background: white; padding: 15px; margin: 20px; clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px); }
+/* --- ROOM MODE LIST --- */
+.room-list { display: flex; flex-direction: column; gap: 10px; max-height: 60vh; overflow-y: auto; text-align: left; }
+.room-btn { 
+    background: #111; border: 1px solid #333; color: white; 
+    padding: 20px; text-align: left; font-size: 1.1rem; 
+    display: flex; justify-content: space-between; align-items: center;
+    transition: 0.2s;
+}
+.room-btn:hover { border-color: var(--primary); background: #222; }
+.room-btn span { opacity: 0.5; font-size: 1.5rem; }
+
+/* --- VOTING GRID --- */
+.voting-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin: 30px 0; }
+.vote-card {
+    background: #111; border: 2px solid #333; padding: 20px 10px;
+    border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative;
+    opacity: 0.8;
+}
+.vote-card:hover { transform: scale(1.05); opacity: 1; border-color: white; }
+
+/* Selected for execution */
+.vote-card.selected { 
+    border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); 
+    box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite;
+}
+.vote-card.selected::after {
+    content: "ELIMINATE"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+    background: var(--secondary); color: white; font-size: 0.7rem; padding: 2px 6px; font-weight: bold;
+}
+
+/* Win/Lose Banners */
+.result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
+.win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
+.win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
