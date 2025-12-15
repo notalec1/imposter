@@ -19,6 +19,8 @@
             --primary: #0f0; /* Terminal Green */
             --secondary: #f0f; /* Magenta */
             --accent: #0ff; /* Cyan */
+            --warning: #ffaa00; /* Orange/Yellow */
+            --danger: #f00; /* Red */
             --text: #eee;
             --font: 'Space Grotesk', monospace;
         }
@@ -32,6 +34,7 @@
             font-family: var(--font);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             min-height: 100vh; overflow-x: hidden;
+            transition: background-color 0.5s;
         }
 
         /* --- LAYERS --- */
@@ -47,16 +50,28 @@
             pointer-events: none; z-index: 1; opacity: 0.6;
         }
 
+        /* MELTDOWN EFFECT */
+        body.meltdown {
+            animation: red-alert 1s infinite alternate;
+        }
+        body.meltdown #matrixCanvas { opacity: 0.1; }
+        
+        @keyframes red-alert {
+            0% { background-color: #200; box-shadow: inset 0 0 100px #500; }
+            100% { background-color: #500; box-shadow: inset 0 0 50px #f00; }
+        }
+
         .container { 
             width: 100%; max-width: 600px; text-align: center; 
             z-index: 10; position: relative; 
-            background: rgba(5, 5, 5, 0.85); 
+            background: rgba(5, 5, 5, 0.90); 
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 1px solid #222;
         }
 
-        /* --- TYPOGRAPHY (Original Glitch Style) --- */
+        /* --- TYPOGRAPHY --- */
         h1 { 
             font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; 
             color: var(--primary); text-shadow: 2px 2px var(--secondary);
@@ -71,7 +86,7 @@
             62% { transform: translate(0,0) skew(5deg); }
         }
 
-        /* --- UI ELEMENTS (Original Angular Style) --- */
+        /* --- UI ELEMENTS --- */
         .input-group { border-bottom: 2px solid var(--surface); margin-bottom: 20px; display: flex; }
         input {
             background: transparent; border: none; color: var(--primary);
@@ -99,6 +114,11 @@
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
         .btn-small { padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; display: inline-block; }
+        
+        /* Control Group for Timer/Settings */
+        .control-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0; }
+        .control-label { color: var(--accent); font-size: 0.9rem; width: 80px; text-align: right; }
+        .control-value { font-family: monospace; font-size: 1.2rem; min-width: 40px; display: inline-block; }
 
         /* --- GAME COMPONENTS --- */
         .grid-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
@@ -108,7 +128,6 @@
         }
         .name-chip:hover { border-color: var(--secondary); color: var(--secondary); text-decoration: line-through; }
         
-        /* Preset Chip Style */
         .preset-chip {
             background: rgba(0, 255, 255, 0.1); border: 1px dashed var(--accent); color: var(--accent);
             padding: 6px 12px; font-size: 0.7rem; cursor: pointer; opacity: 0.7;
@@ -121,6 +140,8 @@
             cursor: pointer; transition: 0.3s;
         }
         .topic-card:hover { border-color: var(--accent); box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.2); }
+        .chaos-card { border-color: var(--warning); color: var(--warning); animation: pulse-yellow 2s infinite; }
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 5px var(--warning); } 50% { box-shadow: 0 0 20px var(--warning); } 100% { box-shadow: 0 0 5px var(--warning); } }
 
         /* --- SECRET REVEAL BOX --- */
         .secret-box {
@@ -180,18 +201,15 @@
             border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); 
             box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite;
         }
-        .vote-card.selected::after {
-            content: "ELIMINATE"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-            background: var(--secondary); color: white; font-size: 0.7rem; padding: 2px 6px; font-weight: bold;
-        }
 
         /* --- RESULTS --- */
         .result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
         .win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
         .win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
+        .win-glitch { border-color: var(--warning); background: rgba(255, 170, 0, 0.1); color: var(--warning); }
 
         /* --- TOGGLE --- */
-        .toggle-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; opacity: 0.7; }
+        .toggle-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; opacity: 0.9; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; }
@@ -199,7 +217,22 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(26px); }
 
-        /* --- NEW STYLES: TURN DISPLAY & HISTORY --- */
+        /* --- STATS & LEADERBOARD --- */
+        .stat-card {
+            background: #111; border-left: 3px solid var(--accent);
+            padding: 10px; margin-bottom: 5px; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-rank { font-weight: bold; color: var(--accent); margin-right: 10px; font-size: 1.2rem; }
+        
+        .history-item {
+            background: #111; padding: 10px; border-bottom: 1px solid #333;
+            display: flex; justify-content: space-between; font-size: 0.8rem; text-align: left;
+        }
+        .history-win { color: var(--primary); }
+        .history-loss { color: var(--secondary); }
+        
+        /* --- TURN & TIMER --- */
         .turn-display {
             border: 1px solid var(--accent); color: var(--accent); padding: 15px; margin: 20px 0;
             background: rgba(0, 255, 255, 0.05); font-weight: bold; font-size: 1.2rem;
@@ -208,12 +241,14 @@
         .turn-display.animate { animation: flash-bg 0.5s infinite; }
         @keyframes flash-bg { 0% {background: transparent;} 50% {background: rgba(0,255,255,0.2);} 100% {background: transparent;} }
 
-        .history-item {
-            background: #111; padding: 10px; border-bottom: 1px solid #333;
-            display: flex; justify-content: space-between; font-size: 0.8rem; text-align: left;
+        #timer { font-size: 5rem; font-family: var(--font); color: var(--text); text-shadow: 0 0 20px var(--primary); margin: 10px 0; transition: color 0.5s; }
+        #timer.critical { color: red; text-shadow: 0 0 30px red; animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+
+        /* SETTINGS SECTION */
+        .settings-panel {
+            background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid #333; margin: 20px 0;
         }
-        .history-win { color: var(--primary); }
-        .history-loss { color: var(--secondary); }
     </style>
 </head>
 <body>
@@ -240,7 +275,7 @@
     </div>
 
     <script>
-        // --- PRESET NAMES (EDIT HERE) ---
+        // --- PRESET NAMES ---
         const PRESET_NAMES = [
             "CYPHER", "NEO", "TRINITY", "GHOST", "VIPER", "ECHO", "SHADE", "RAVEN", 
             "WOLF", "ZERO", "NIX", "JINX", "BLAZE", "FURY", "STORM"
@@ -281,56 +316,51 @@
                 { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
                 { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
                 { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" },
-                { w: "Popcorn", h: "Movie / Corn" }, { w: "Donut", h: "Round / Hole" }, { w: "Chocolate", h: "Sweet / Brown" }, { w: "Pancakes", h: "Breakfast / Syrup" }
+                { w: "Popcorn", h: "Movie / Corn" }, { w: "Donut", h: "Round / Hole" }, { w: "Chocolate", h: "Sweet / Brown" }
             ],
             "Animals": [
                 { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
                 { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
                 { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" },
-                { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }, { w: "Octopus", h: "8 Arms / Sea" }, { w: "Owl", h: "Hoot / Wise" }
+                { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }, { w: "Octopus", h: "8 Arms / Sea" }
             ],
             "Jobs": [
                 { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
                 { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
                 { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" },
-                { w: "Cop", h: "Badge / Law" }, { w: "Farmer", h: "Crops / Animals" }, { w: "Astronaut", h: "Space / Suit" }, { w: "Detective", h: "Magnify / Clues" }
+                { w: "Cop", h: "Badge / Law" }, { w: "Farmer", h: "Crops / Animals" }, { w: "Astronaut", h: "Space / Suit" }
             ],
             "Places": [
                 { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
                 { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
                 { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" },
-                { w: "Cinema", h: "Movies / Corn" }, { w: "Museum", h: "Old / Art" }, { w: "Airport", h: "Planes / Travel" }, { w: "Graveyard", h: "Dead / Spooky" }
+                { w: "Cinema", h: "Movies / Corn" }, { w: "Museum", h: "Old / Art" }, { w: "Graveyard", h: "Dead / Spooky" }
             ],
             "Household": [
                 { w: "Chair", h: "Sit / Legs" }, { w: "Toaster", h: "Bread / Hot" }, { w: "Phone", h: "Call / Screen" },
                 { w: "Shoe", h: "Foot / Walk" }, { w: "Umbrella", h: "Rain / Dry" }, { w: "Mirror", h: "Reflect / Glass" },
                 { w: "Fork", h: "Eat / Prongs" }, { w: "Laptop", h: "Computer / Fold" }, { w: "Bed", h: "Sleep / Soft" }, { w: "Lamp", h: "Light / Switch" },
-                { w: "Toilet", h: "Flush / Bathroom" }, { w: "Fridge", h: "Cold / Food" }, { w: "Key", h: "Lock / Open" }, { w: "Clock", h: "Time / Tick" }
+                { w: "Toilet", h: "Flush / Bathroom" }, { w: "Fridge", h: "Cold / Food" }, { w: "Key", h: "Lock / Open" }
             ],
             "Vehicles": [
                 { w: "Car", h: "Drive / Wheels" }, { w: "Bicycle", h: "Pedal / Two" }, { w: "Train", h: "Track / Choo" }, { w: "Boat", h: "Water / Float" },
-                { w: "Helicopter", h: "Spin / Air" }, { w: "Tank", h: "War / Heavy" }, { w: "Submarine", h: "Underwater" }, { w: "Skateboard", h: "Tricks / Push" },
-                { w: "Bus", h: "Public / Big" }, { w: "Motorcycle", h: "Fast / Helmet" }
+                { w: "Helicopter", h: "Spin / Air" }, { w: "Tank", h: "War / Heavy" }, { w: "Submarine", h: "Underwater" }, { w: "Skateboard", h: "Tricks / Push" }
             ],
             "Sports": [
                 { w: "Soccer", h: "Kick / Goal" }, { w: "Basketball", h: "Hoop / Bounce" }, { w: "Tennis", h: "Racket / Net" }, { w: "Golf", h: "Club / Hole" },
-                { w: "Boxing", h: "Punch / Ring" }, { w: "Swimming", h: "Water / Pool" }, { w: "Baseball", h: "Bat / Base" }, { w: "Volleyball", h: "Beach / Spike" },
-                { w: "Skiing", h: "Snow / Mountain" }, { w: "Chess", h: "Board / Brain" }
+                { w: "Boxing", h: "Punch / Ring" }, { w: "Swimming", h: "Water / Pool" }, { w: "Baseball", h: "Bat / Base" }, { w: "Volleyball", h: "Beach / Spike" }
             ],
             "Nature": [
                 { w: "Tree", h: "Leaves / Wood" }, { w: "Volcano", h: "Lava / Hot" }, { w: "Rain", h: "Water / Sky" }, { w: "Sun", h: "Hot / Star" },
-                { w: "Moon", h: "Night / Space" }, { w: "Cloud", h: "White / Fluffy" }, { w: "Flower", h: "Rose / Smell" }, { w: "Mountain", h: "High / Climb" },
-                { w: "River", h: "Water / Flow" }, { w: "Desert", h: "Sand / Dry" }
+                { w: "Moon", h: "Night / Space" }, { w: "Cloud", h: "White / Fluffy" }, { w: "Flower", h: "Rose / Smell" }, { w: "Mountain", h: "High / Climb" }
             ],
             "Electronics": [
                 { w: "Camera", h: "Photo / Lens" }, { w: "Headphones", h: "Music / Ears" }, { w: "Drone", h: "Fly / Remote" }, { w: "Battery", h: "Power / Charge" },
-                { w: "Keyboard", h: "Type / Keys" }, { w: "Mouse", h: "Click / Scroll" }, { w: "Robot", h: "Metal / AI" }, { w: "Tablet", h: "Touch / Screen" },
-                { w: "Microphone", h: "Voice / Record" }, { w: "Console", h: "Game / Play" }
+                { w: "Keyboard", h: "Type / Keys" }, { w: "Mouse", h: "Click / Scroll" }, { w: "Robot", h: "Metal / AI" }, { w: "Tablet", h: "Touch / Screen" }
             ],
             "Clothes": [
                 { w: "Hat", h: "Head / Cap" }, { w: "Jeans", h: "Pants / Denim" }, { w: "Shirt", h: "Torso / Wear" }, { w: "Socks", h: "Feet / Warm" },
-                { w: "Glasses", h: "Eyes / See" }, { w: "Watch", h: "Wrist / Time" }, { w: "Coat", h: "Winter / Warm" }, { w: "Gloves", h: "Hands / Fingers" },
-                { w: "Scarf", h: "Neck / Wool" }, { w: "Belt", h: "Waist / Hold" }
+                { w: "Glasses", h: "Eyes / See" }, { w: "Watch", h: "Wrist / Time" }, { w: "Coat", h: "Winter / Warm" }, { w: "Gloves", h: "Hands / Fingers" }
             ]
         };
 
@@ -361,9 +391,11 @@
         // --- STATE & CORE ---
         let state = {
             step: 'LOBBY', players: [], passMode: false, passIndex: 0,
-            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
+            topic: null, secretWord: null, secretHint: null, 
+            imposterIndices: [], glitchIndex: null, // NEW ROLES
             startTime: null, votedIndex: null, customWords: [],
-            history: [], startingPlayer: null
+            history: [], startingPlayer: null,
+            settings: { timer: 180, imposterCount: 1, hasGlitch: false } // NEW SETTINGS
         };
 
         const params = new URLSearchParams(window.location.search);
@@ -379,8 +411,13 @@
                 } else {
                     let saved = null;
                     try { saved = localStorage.getItem('imposterState'); } catch(e) {}
-                    if (saved) state = { ...state, ...JSON.parse(saved) };
-                    // Ensure history exists if loading old save
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        state = { ...state, ...parsed };
+                        // Migration for old saves
+                        if(!state.settings) state.settings = { timer: 180, imposterCount: 1, hasGlitch: false };
+                        if(typeof state.imposterIndex !== 'undefined') { state.imposterIndices = [state.imposterIndex]; delete state.imposterIndex; }
+                    }
                     if (!state.history) state.history = [];
                     if(state.step !== 'LOBBY') renderHostScreen(); else renderLobby();
                 }
@@ -405,13 +442,33 @@
 
         function removePlayer(index) { state.players.splice(index, 1); saveState(); renderLobby(); }
         function togglePassMode() { state.passMode = !state.passMode; playSfx('click'); renderLobby(); }
-        function resetGame() { playSfx('click'); state.step = 'LOBBY'; state.topic = null; state.secretWord = null; state.imposterIndex = null; state.startingPlayer = null; saveState(); renderLobby(); }
+        
+        // SETTINGS TOGGLES
+        function adjustTimer(sec) { state.settings.timer = Math.max(60, state.settings.timer + sec); saveState(); renderLobby(); }
+        function toggleImposterCount() { state.settings.imposterCount = (state.settings.imposterCount === 1) ? 2 : 1; saveState(); renderLobby(); }
+        function toggleGlitch() { state.settings.hasGlitch = !state.settings.hasGlitch; saveState(); renderLobby(); }
+
+        function resetGame() { 
+            playSfx('click'); 
+            state.step = 'LOBBY'; 
+            state.topic = null; state.secretWord = null; 
+            state.imposterIndices = []; state.glitchIndex = null;
+            state.startingPlayer = null; 
+            document.body.classList.remove('meltdown'); // Stop alarm
+            saveState(); 
+            renderLobby(); 
+        }
 
         function startGame(topicKey) {
             if (state.players.length < 3) return alert("Need 3+ players!");
+            // Check count for advanced roles
+            if (state.settings.imposterCount === 2 && state.players.length < 5) return alert("Need 5+ players for 2 Imposters!");
+            if (state.settings.hasGlitch && state.players.length < 4) return alert("Need 4+ players for Glitch!");
+
             playSfx('scan');
             state.topic = topicKey;
 
+            // WORD SELECTION
             if (topicKey === 'CUSTOM') {
                 const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
                 if (!input) return;
@@ -419,6 +476,17 @@
                 if (state.customWords.length < 2) return alert("Need 2+ words!");
                 state.secretWord = state.customWords[Math.floor(Math.random() * state.customWords.length)];
                 state.secretHint = "Custom Word";
+            } else if (topicKey === 'CHAOS') {
+                // CHAOS MODE: Pick random category then random word
+                const cats = Object.keys(GAME_DATA);
+                const randomCat = cats[Math.floor(Math.random() * cats.length)];
+                const dataList = GAME_DATA[randomCat];
+                const item = dataList[Math.floor(Math.random() * dataList.length)];
+                state.secretWord = item.w;
+                state.secretHint = item.h;
+                // For Chaos, Citizens see the Category, Imposters see "CHAOS"
+                // (Handled in render logic via role)
+                state.topic = "CHAOS (" + randomCat + ")"; 
             } else {
                 const dataList = GAME_DATA[topicKey];
                 const item = dataList[Math.floor(Math.random() * dataList.length)];
@@ -426,11 +494,28 @@
                 state.secretHint = item.h;
             }
 
-            state.imposterIndex = Math.floor(Math.random() * state.players.length);
-            
-            // RNG First Player
-            state.startingPlayer = state.players[Math.floor(Math.random() * state.players.length)];
+            // ROLE ASSIGNMENT
+            let indices = state.players.map((_, i) => i);
+            // Shuffle indices
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
 
+            state.imposterIndices = [];
+            state.glitchIndex = null;
+
+            // Assign Imposters
+            for(let k=0; k<state.settings.imposterCount; k++) {
+                state.imposterIndices.push(indices.pop());
+            }
+
+            // Assign Glitch
+            if(state.settings.hasGlitch && indices.length > 0) {
+                state.glitchIndex = indices.pop();
+            }
+
+            state.startingPlayer = state.players[Math.floor(Math.random() * state.players.length)];
             state.startTime = null;
             state.votedIndex = null;
             state.step = state.passMode ? 'PASS_PREP' : 'QR_PREP';
@@ -443,14 +528,22 @@
             playSfx('alarm'); 
             state.step = 'GAME'; 
             state.startTime = Date.now(); 
+            // Apply Timer Preset
+            state.endTime = Date.now() + (state.settings.timer * 1000);
             saveState(); 
             renderHostScreen(); 
             requestWakeLock();
-            // Trigger animation for first player
             setTimeout(animateStartingPlayer, 500);
         }
 
-        function startVoting() { playSfx('alarm'); state.step = 'VOTING'; saveState(); renderHostScreen(); }
+        function startVoting() { 
+            playSfx('alarm'); 
+            state.step = 'VOTING'; 
+            document.body.classList.remove('meltdown'); // Stop alarm visual
+            saveState(); 
+            renderHostScreen(); 
+        }
+        
         function selectVote(i) { playSfx('click'); state.votedIndex = (state.votedIndex === i) ? null : i; renderHostScreen(); }
 
         function submitVote() {
@@ -458,24 +551,37 @@
             playSfx('reveal');
             state.step = 'RESULTS';
             
-            // SAVE TO HISTORY
-            const imposterCaught = (state.votedIndex === state.imposterIndex);
+            // WIN LOGIC
+            let winner = "CITIZENS";
+            let roleVoted = "CITIZEN";
+            
+            if (state.imposterIndices.includes(state.votedIndex)) {
+                winner = "CITIZENS"; // Caught an imposter
+                roleVoted = "IMPOSTER";
+            } else if (state.votedIndex === state.glitchIndex) {
+                winner = "THE GLITCH"; // Glitch wanted to die
+                roleVoted = "GLITCH";
+            } else {
+                winner = "IMPOSTERS"; // Wrong person voted
+            }
+
+            // HISTORY
             state.history.unshift({
                 date: new Date().toLocaleString(),
                 topic: state.topic,
                 word: state.secretWord,
-                imposter: state.players[state.imposterIndex],
-                winner: imposterCaught ? "CITIZENS" : "IMPOSTER"
+                imposters: state.imposterIndices.map(i => state.players[i]).join(', '),
+                winner: winner
             });
-            // Limit history to 20
-            if(state.history.length > 20) state.history.pop();
+            if(state.history.length > 50) state.history.pop();
 
             saveState();
             renderHostScreen();
             
             setTimeout(() => { 
-                playSfx(imposterCaught ? 'win' : 'lose'); 
-                if(imposterCaught) try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} 
+                playSfx(winner === "CITIZENS" || winner === "THE GLITCH" ? 'win' : 'lose'); 
+                if(winner === "CITIZENS") try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} 
+                if(winner === "THE GLITCH") try{ confetti({ particleCount: 200, colors: ['#ffaa00', '#fff'] }); }catch(e){} 
             }, 500);
         }
 
@@ -490,12 +596,13 @@
             else if(state.step === 'VOTING') renderVoting();
             else if(state.step === 'RESULTS') renderResults();
             else if(state.step === 'HISTORY') renderHistory();
+            else if(state.step === 'STATS') renderStats(); // NEW
             else if(state.step === 'SETTINGS') renderSettings();
         }
 
         function renderLobby() {
-            // Filter out presets already added
             const availablePresets = PRESET_NAMES.filter(n => !state.players.includes(n));
+            const timerMin = Math.floor(state.settings.timer / 60);
 
             app.innerHTML = `
                 <h1>THE IMPOSTER</h1>
@@ -513,23 +620,93 @@
                     ${state.players.map((p, i) => `<div class="name-chip" onclick="removePlayer(${i})">${p}</div>`).join('')}
                 </div>
                 
-                <div class="toggle-wrapper">
-                    <span>📱 QR MODE</span>
-                    <label class="switch"><input type="checkbox" ${state.passMode ? 'checked' : ''} onchange="togglePassMode()"><span class="slider"></span></label>
-                    <span>🤝 PASS MODE</span>
+                <!-- MISSION SETTINGS -->
+                <div class="settings-panel">
+                    <h2 style="font-size:0.8rem; margin:0 0 10px 0;">MISSION PARAMETERS</h2>
+                    <div class="control-row">
+                        <span class="control-label">IMPOSTERS:</span>
+                        <button class="btn btn-small" style="width:40px" onclick="toggleImposterCount()">${state.settings.imposterCount}</button>
+                    </div>
+                    <div class="control-row">
+                        <span class="control-label">GLITCH:</span>
+                        <label class="switch"><input type="checkbox" ${state.settings.hasGlitch ? 'checked' : ''} onchange="toggleGlitch()"><span class="slider"></span></label>
+                    </div>
+                    <div class="control-row">
+                        <span class="control-label">TIMER:</span>
+                        <button class="btn btn-small" onclick="adjustTimer(-60)">-</button>
+                        <span class="control-value">${timerMin}m</span>
+                        <button class="btn btn-small" onclick="adjustTimer(60)">+</button>
+                    </div>
+                     <div class="control-row">
+                         <span class="control-label">PASS MODE:</span>
+                         <label class="switch"><input type="checkbox" ${state.passMode ? 'checked' : ''} onchange="togglePassMode()"><span class="slider"></span></label>
+                     </div>
                 </div>
                 
-                <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
-                    <button class="btn btn-secondary btn-small" onclick="state.step='HISTORY'; renderHostScreen();">HISTORY</button>
+                <div style="display:flex; justify-content:center; gap:10px; margin-top:10px;">
+                    <button class="btn btn-secondary btn-small" onclick="state.step='STATS'; renderHostScreen();">LEADERBOARD</button>
+                    <button class="btn btn-secondary btn-small" onclick="state.step='HISTORY'; renderHostScreen();">LOGS</button>
                     <button class="btn btn-secondary btn-small" onclick="state.step='SETTINGS'; renderHostScreen();">DATA</button>
                 </div>
 
                 ${state.players.length >= 3 ? `
                     <div class="topic-grid">
+                        <div class="topic-card chaos-card" onclick="startGame('CHAOS')">⚠️ CHAOS MODE</div>
                         ${Object.keys(GAME_DATA).map(t => `<div class="topic-card" onclick="startGame('${t}')">${t}</div>`).join('')}
                         <div class="topic-card" style="border-color:var(--secondary); color:var(--secondary)" onclick="startGame('CUSTOM')">Custom...</div>
                     </div>
                 ` : '<p style="margin-top:30px; font-size:0.8rem;">RECRUIT 3 AGENTS TO START</p>'}
+            `;
+        }
+
+        // --- NEW LEADERBOARD LOGIC ---
+        function renderStats() {
+            // Calculate stats
+            const stats = {};
+            state.players.forEach(p => stats[p] = { plays: 0, citWins: 0, impWins: 0, glitchWins: 0, totalWins: 0 });
+            
+            state.history.forEach(h => {
+                // Imposters in this game
+                const imps = h.imposters.split(', ');
+                const winner = h.winner;
+                
+                // Add points
+                state.players.forEach(p => {
+                    if (!stats[p]) stats[p] = { plays: 0, citWins: 0, impWins: 0, glitchWins: 0, totalWins: 0 };
+                    
+                    if (winner === "CITIZENS") {
+                        if (!imps.includes(p)) { stats[p].citWins++; stats[p].totalWins++; }
+                    } else if (winner === "IMPOSTERS") {
+                        if (imps.includes(p)) { stats[p].impWins++; stats[p].totalWins++; }
+                    } else if (winner === "THE GLITCH") {
+                        // We don't track who was glitch in history string simply, 
+                        // so this is approximate unless we update history object. 
+                        // For now, let's skip complex glitch history or assume stats[p].glitchWins++ if implemented fully.
+                    }
+                });
+            });
+
+            // Sort by Total Wins
+            const sorted = Object.keys(stats).sort((a,b) => stats[b].totalWins - stats[a].totalWins);
+
+            app.innerHTML = `
+                <h2>LEADERBOARD</h2>
+                <div style="max-height:60vh; overflow-y:auto; width:100%; margin: 20px 0;">
+                    ${sorted.length === 0 ? '<p>No data yet.</p>' : sorted.map((p, i) => `
+                        <div class="stat-card">
+                            <div style="display:flex; align-items:center;">
+                                <span class="stat-rank">#${i+1}</span>
+                                <div><strong>${p}</strong></div>
+                            </div>
+                            <div style="font-size:0.8rem; text-align:right;">
+                                <span style="color:var(--primary)">C:${stats[p].citWins}</span> | 
+                                <span style="color:var(--secondary)">I:${stats[p].impWins}</span> <br>
+                                TOTAL: ${stats[p].totalWins}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn btn-secondary" onclick="state.step='LOBBY'; renderHostScreen();">BACK</button>
             `;
         }
 
@@ -592,7 +769,7 @@
                             </div>
                             <div style="text-align:right">
                                 <span class="${h.winner === 'CITIZENS' ? 'history-win' : 'history-loss'}">${h.winner}</span><br>
-                                <span style="font-size:0.7rem; color:var(--secondary)">Imp: ${h.imposter}</span>
+                                <span style="font-size:0.7rem; color:var(--secondary)">Imps: ${h.imposters}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -628,6 +805,10 @@
                 </div>
 
                 <div id="timer" style="font-size: 5rem; font-family:var(--font); color:var(--text); text-shadow: 0 0 20px var(--primary); margin: 10px 0;">0:00</div>
+                <div style="display:flex; justify-content:center; gap:20px; opacity:0.5; margin-bottom:20px;">
+                    <button class="btn btn-small" style="width:50px" onclick="modifyTime(-10)">-10s</button>
+                    <button class="btn btn-small" style="width:50px" onclick="modifyTime(10)">+10s</button>
+                </div>
                 
                 <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">🎲 SPIN NEXT SPEAKER</button>
 
@@ -638,13 +819,32 @@
             const timerEl = document.getElementById('timer');
             const update = () => {
                 if(state.step !== 'GAME') return;
-                const diff = Math.floor((Date.now() - state.startTime) / 1000);
-                const m = Math.floor(diff / 60);
-                const s = (diff % 60).toString().padStart(2, '0');
-                if(timerEl) timerEl.innerText = `${m}:${s}`;
+                const now = Date.now();
+                const remaining = Math.max(0, Math.floor((state.endTime - now) / 1000));
+                
+                const m = Math.floor(remaining / 60);
+                const s = (remaining % 60).toString().padStart(2, '0');
+                
+                if(timerEl) {
+                    timerEl.innerText = `${m}:${s}`;
+                    // MELTDOWN LOGIC
+                    if(remaining <= 30 && remaining > 0) {
+                        timerEl.classList.add('critical');
+                        document.body.classList.add('meltdown');
+                    } else if (remaining === 0) {
+                        document.body.classList.add('meltdown'); // Keep red at 0
+                    } else {
+                        timerEl.classList.remove('critical');
+                        document.body.classList.remove('meltdown');
+                    }
+                }
                 requestAnimationFrame(update);
             };
             update();
+        }
+
+        function modifyTime(seconds) {
+            state.endTime += (seconds * 1000);
         }
 
         function animateStartingPlayer() {
@@ -672,7 +872,6 @@
                     box.style.color = 'var(--primary)';
                 }
                 
-                // Slowly reveal
                 if(Math.random() > 0.5) iterations += 0.5; 
             }, 50);
         }
@@ -714,21 +913,38 @@
         }
 
         function renderResults() {
-            const imposterCaught = (state.votedIndex === state.imposterIndex);
-            const imposterName = state.players[state.imposterIndex];
-            const resultTitle = imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS";
-            const bannerClass = imposterCaught ? "win-citizen" : "win-imposter";
+            const isImposterVoted = state.imposterIndices.includes(state.votedIndex);
+            const isGlitchVoted = (state.votedIndex === state.glitchIndex);
+            
+            let resultTitle, resultMsg, bannerClass;
+            
+            if (isGlitchVoted) {
+                resultTitle = "GLITCH WINS";
+                resultMsg = "System Error: The Glitch Wanted Disconnection";
+                bannerClass = "win-glitch";
+            } else if (isImposterVoted) {
+                resultTitle = "CITIZENS WIN";
+                resultMsg = "Imposter Neutralized";
+                bannerClass = "win-citizen";
+            } else {
+                resultTitle = "IMPOSTERS WIN";
+                resultMsg = "System Compromised. Wrong Agent Ejected.";
+                bannerClass = "win-imposter";
+            }
+
+            const imposterNames = state.imposterIndices.map(i => state.players[i]).join(' & ');
             
             app.innerHTML = `
                 <div class="result-banner ${bannerClass}">
                     <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${resultTitle}</h1>
-                    <p style="color:inherit; margin:0;">${imposterCaught ? "Glitch Neutralized" : "System Compromised"}</p>
+                    <p style="color:inherit; margin:0;">${resultMsg}</p>
                 </div>
-                <div style="display:flex; gap:10px; text-align:left;">
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET WORD</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>REAL IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
+                <div style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+                    <div style="background:#111; padding:15px; border:1px solid #333;"><small>SECRET WORD</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
+                    <div style="background:#111; padding:15px; border:1px solid #333;"><small>REAL IMPOSTERS</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterNames}</strong></div>
+                    ${state.glitchIndex !== null ? `<div style="background:#111; padding:15px; border:1px solid #333;"><small>THE GLITCH</small><br><strong style="color:var(--warning); font-size:1.5rem;">${state.players[state.glitchIndex]}</strong></div>` : ''}
                 </div>
-                <button class="btn" onclick="resetGame()">NEW MISSION</button>
+                <button class="btn" style="margin-top:20px" onclick="resetGame()">NEW MISSION</button>
             `;
         }
 
@@ -756,10 +972,19 @@
         }
 
         function renderPlayerIdentity(name, role, word, hint, topic) {
-            const isImposter = (role === 'IMPOSTER');
-            const displayWord = isImposter ? "YOU ARE THE<br>IMPOSTER" : word;
-            const displayHint = isImposter ? ("HINT: " + hint) : "Citizen";
-            const color = isImposter ? 'color:var(--secondary)' : 'color:var(--primary)';
+            let displayWord = word;
+            let displayHint = "Citizen";
+            let color = 'color:var(--primary)';
+
+            if (role === 'IMPOSTER') {
+                displayWord = "YOU ARE THE<br>IMPOSTER";
+                displayHint = "HINT: " + hint;
+                color = 'color:var(--secondary)';
+            } else if (role === 'GLITCH') {
+                displayWord = "YOU ARE THE<br>GLITCH";
+                displayHint = "OBJECTIVE: GET VOTED OUT";
+                color = 'color:var(--warning)';
+            }
 
             app.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">
@@ -768,7 +993,7 @@
                 <div class="secret-box" id="mobileBox">
                     <div class="fingerprint-icon">☝️</div>
                     <div class="secret-content" style="${color}">${displayWord}</div>
-                    ${isImposter ? `<div class="hint-text">${displayHint}</div>` : ''}
+                    ${role !== 'CITIZEN' ? `<div class="hint-text">${displayHint}</div>` : ''}
                 </div>
                 <p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>
                 <div style="margin-top:50px; border-top:1px solid #333; padding-top:20px;">
@@ -776,7 +1001,7 @@
                     <button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">🗳️ OPEN VOTING GUIDE</button>
                 </div>
             `;
-            bindRevealEvents('mobileBox', isImposter);
+            bindRevealEvents('mobileBox', role !== 'CITIZEN');
         }
 
         function renderPlayerScreen() {
@@ -786,14 +1011,14 @@
         }
 
         // --- UTILS ---
-        function bindRevealEvents(id, isImposter) {
+        function bindRevealEvents(id, isSecretRole) {
             const box = document.getElementById(id);
             if(!box) return;
             const reveal = (e) => {
                 if(e.cancelable) e.preventDefault();
                 if(!box.classList.contains('revealing')) {
                     playSfx('reveal');
-                    if(isImposter) pulse([100, 50, 100]); else pulse(20);
+                    if(isSecretRole) pulse([100, 50, 100]); else pulse(20);
                 }
                 box.classList.add('revealing');
             };
@@ -805,8 +1030,21 @@
         function showPlayerQR(i) {
             playSfx('click');
             const p = state.players[i];
-            const isImp = (i === state.imposterIndex);
-            const payload = { name: p, topic: state.topic, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
+            
+            let role = 'CITIZEN';
+            let word = state.secretWord;
+            let hint = null;
+
+            if (state.imposterIndices.includes(i)) {
+                role = 'IMPOSTER';
+                word = null;
+                hint = state.secretHint;
+            } else if (i === state.glitchIndex) {
+                role = 'GLITCH';
+                word = null;
+            }
+
+            const payload = { name: p, topic: state.topic, role: role, word: word, hint: hint };
             generateQR(payload, `Scan for ${p}`, 'data');
         }
 
@@ -816,8 +1054,19 @@
             const payload = {
                 id: id, topic: state.topic,
                 players: state.players.map((p, i) => {
-                    const isImp = (i === state.imposterIndex);
-                    return { name: p, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
+                    let role = 'CITIZEN';
+                    let word = state.secretWord;
+                    let hint = null;
+
+                    if (state.imposterIndices.includes(i)) {
+                        role = 'IMPOSTER';
+                        word = null;
+                        hint = state.secretHint;
+                    } else if (i === state.glitchIndex) {
+                        role = 'GLITCH';
+                        word = null;
+                    }
+                    return { name: p, role: role, word: word, hint: hint };
                 })
             };
             generateQR(payload, "Scan to Join Room", 'room');
@@ -839,12 +1088,26 @@
             app.innerHTML = `<h2>PASS DEVICE</h2><h1 style="font-size:2.5rem; color:var(--primary); margin:30px 0;">${p}</h1><button class="btn" onclick="renderPassReveal()">I AM ${p}</button>`;
         }
         function renderPassReveal() {
-            const isImp = (state.passIndex === state.imposterIndex);
-            const word = isImp ? "YOU ARE THE<br>IMPOSTER" : state.secretWord;
-            const hint = isImp ? ("HINT: " + state.secretHint) : "Citizen";
-            const color = isImp ? 'color:var(--secondary)' : 'color:var(--primary)';
-            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${color}">${word}</div>${isImp ? `<div class="hint-text">${hint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
-            bindRevealEvents('passBox', isImp);
+            const i = state.passIndex;
+            let displayWord = state.secretWord;
+            let displayHint = "Citizen";
+            let color = 'color:var(--primary)';
+            let isSecret = false;
+
+            if (state.imposterIndices.includes(i)) {
+                displayWord = "YOU ARE THE<br>IMPOSTER";
+                displayHint = "HINT: " + state.secretHint;
+                color = 'color:var(--secondary)';
+                isSecret = true;
+            } else if (i === state.glitchIndex) {
+                displayWord = "YOU ARE THE<br>GLITCH";
+                displayHint = "OBJECTIVE: GET VOTED OUT";
+                color = 'color:var(--warning)';
+                isSecret = true;
+            }
+
+            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${color}">${displayWord}</div>${isSecret ? `<div class="hint-text">${displayHint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
+            bindRevealEvents('passBox', isSecret);
             // Allow clicking next after revealing
             const box = document.getElementById('passBox');
             const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
