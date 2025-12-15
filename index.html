@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THE IMPOSTER: Cyberpunk</title>
+    <title>THE IMPOSTER: Ultimate</title>
     
     <!-- FONTS & LIBS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,13 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* --- ORIGINAL CYBERPUNK THEME --- */
+        /* --- CYBERPUNK THEME --- */
         :root {
             --bg: #050505;
             --surface: #111;
-            --primary: #0f0; /* Terminal Green */
-            --secondary: #f0f; /* Magenta */
-            --accent: #0ff; /* Cyan */
+            --primary: #0f0; 
+            --secondary: #f0f;
+            --accent: #0ff; 
             --text: #eee;
             --font: 'Space Grotesk', monospace;
         }
@@ -34,159 +34,92 @@
             min-height: 100vh; overflow-x: hidden;
         }
 
-        /* --- LAYERS --- */
-        #matrixCanvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; opacity: 0.25; pointer-events: none;
-        }
-
+        /* --- BACKGROUNDS --- */
+        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.25; pointer-events: none; }
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%);
-            background-size: 100% 4px; 
-            pointer-events: none; z-index: 1; opacity: 0.6;
+            background-size: 100% 4px; pointer-events: none; z-index: 1; opacity: 0.6;
         }
 
         .container { 
             width: 100%; max-width: 600px; text-align: center; 
             z-index: 10; position: relative; 
-            /* Added slight background to make text readable over matrix */
-            background: rgba(5, 5, 5, 0.85); 
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(5, 5, 5, 0.85); padding: 20px; border-radius: 10px;
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            border: 1px solid #222;
         }
 
-        /* --- TYPOGRAPHY (Original Glitch Style) --- */
-        h1 { 
-            font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; 
-            color: var(--primary); text-shadow: 2px 2px var(--secondary);
-            animation: glitch 1s linear infinite;
-        }
+        /* --- TEXT --- */
+        h1 { font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; color: var(--primary); text-shadow: 2px 2px var(--secondary); animation: glitch 1s linear infinite; }
         h2 { font-size: 1.2rem; color: var(--accent); opacity: 0.9; text-transform: uppercase; margin-bottom: 20px; }
         p { color: #888; line-height: 1.5; }
+        @keyframes glitch { 2%, 64% { transform: translate(2px,0) skew(0deg); } 4%, 60% { transform: translate(-2px,0) skew(0deg); } 62% { transform: translate(0,0) skew(5deg); } }
 
-        @keyframes glitch {
-            2%, 64% { transform: translate(2px,0) skew(0deg); }
-            4%, 60% { transform: translate(-2px,0) skew(0deg); }
-            62% { transform: translate(0,0) skew(5deg); }
-        }
-
-        /* --- UI ELEMENTS (Original Angular Style) --- */
+        /* --- UI ELEMENTS --- */
         .input-group { border-bottom: 2px solid var(--surface); margin-bottom: 20px; display: flex; }
-        input {
-            background: transparent; border: none; color: var(--primary);
-            padding: 15px; font-size: 1.2rem; flex: 1; font-family: var(--font);
-            text-transform: uppercase;
-        }
+        input { background: transparent; border: none; color: var(--primary); padding: 15px; font-size: 1.2rem; flex: 1; font-family: var(--font); text-transform: uppercase; }
         input:focus { outline: none; }
-        input::placeholder { color: #333; }
-
+        
         .btn {
-            background: var(--surface); color: var(--primary);
-            border: 1px solid var(--primary); padding: 18px 30px;
+            background: var(--surface); color: var(--primary); border: 1px solid var(--primary); padding: 18px 30px;
             font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; width: 100%; margin-top: 15px; position: relative;
-            transition: 0.2s; 
-            /* THE ORIGINAL CLIPPED CORNERS */
+            cursor: pointer; width: 100%; margin-top: 15px; position: relative; transition: 0.2s; 
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
         .btn:hover { background: var(--primary); color: var(--bg); box-shadow: 0 0 15px var(--primary); }
         .btn:active { transform: scale(0.98); }
-        
         .btn-secondary { border-color: var(--text); color: var(--text); }
         .btn-secondary:hover { background: var(--text); color: var(--bg); box-shadow: 0 0 15px var(--text); }
-        
         .btn-danger { border-color: var(--secondary); color: var(--secondary); }
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
-        /* --- GAME COMPONENTS --- */
+        /* --- COMPONENTS --- */
         .grid-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
-        .name-chip { 
-            background: #111; padding: 8px 16px; border: 1px solid #333; 
-            color: #888; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
-        }
+        .name-chip { background: #111; padding: 8px 16px; border: 1px solid #333; color: #888; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
         .name-chip:hover { border-color: var(--secondary); color: var(--secondary); text-decoration: line-through; }
+        
+        /* PRESET CHIPS */
+        .preset-chip { background: rgba(0, 255, 255, 0.1); border-color: var(--accent); color: var(--accent); text-decoration: none !important; }
+        .preset-chip:hover { background: var(--accent); color: #000; }
 
         .topic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
-        .topic-card { 
-            padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.5); 
-            cursor: pointer; transition: 0.3s;
-        }
+        .topic-card { padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.5); cursor: pointer; transition: 0.3s; }
         .topic-card:hover { border-color: var(--accent); box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.2); }
 
-        /* --- SECRET REVEAL BOX --- */
         .secret-box {
-            margin: 40px auto; width: 280px; height: 280px;
-            background: #000; border: 2px solid #333;
+            margin: 40px auto; width: 280px; height: 280px; background: #000; border: 2px solid #333;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            transition: 0.3s;
+            position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(0,0,0,0.5); transition: 0.3s;
         }
-        .secret-content { 
-            font-size: 2.5rem; font-weight: bold; text-align: center;
-            filter: blur(40px) brightness(0.5); opacity: 0; transition: all 0.2s;
-            color: var(--primary); z-index: 2;
-        }
-        
-        /* Hint Styling */
-        .hint-text {
-            font-size: 1rem; color: #fff; background: var(--secondary); 
-            padding: 4px 12px; margin-top: 15px; border-radius: 2px;
-            opacity: 0; transition: all 0.2s; transform: translateY(10px); z-index: 2;
-            text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
-        }
-
-        .fingerprint-icon {
-            font-size: 4rem; color: #333; transition: 0.3s;
-            animation: pulse-red 2s infinite; border-radius: 50%;
-            position: absolute; z-index: 1;
-        }
+        .secret-content { font-size: 2.5rem; font-weight: bold; text-align: center; filter: blur(40px) brightness(0.5); opacity: 0; transition: all 0.2s; color: var(--primary); z-index: 2; }
+        .hint-text { font-size: 1rem; color: #fff; background: var(--secondary); padding: 4px 12px; margin-top: 15px; border-radius: 2px; opacity: 0; transition: all 0.2s; transform: translateY(10px); z-index: 2; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        .fingerprint-icon { font-size: 4rem; color: #333; transition: 0.3s; animation: pulse-red 2s infinite; border-radius: 50%; position: absolute; z-index: 1; }
         .secret-box.revealing { border-color: var(--primary); box-shadow: 0 0 50px var(--primary); }
         .secret-box.revealing .secret-content { filter: blur(0); opacity: 1; }
         .secret-box.revealing .hint-text { opacity: 1; transform: translateY(0); }
         .secret-box.revealing .fingerprint-icon { opacity: 0; transform: scale(1.5); }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
 
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); }
-        }
+        /* --- SPEAKER REVEAL --- */
+        .speaker-box { padding: 20px; border: 2px solid var(--primary); margin: 20px 0; background: rgba(0, 255, 0, 0.05); }
+        .speaker-name { font-size: 2.5rem; font-weight: bold; color: var(--primary); min-height: 60px; display:flex; align-items:center; justify-content:center; }
+        .decrypt-anim { animation: glitch 0.2s infinite; }
 
-        /* --- MODAL --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 200;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
-        .qr-container { background: white; padding: 15px; margin: 20px; clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%, 0 20px); }
-        
-        /* --- VOTING --- */
+        .modal-content { background: #111; padding: 30px; width: 90%; max-width: 500px; border: 1px solid var(--text); position: relative; max-height: 90vh; overflow-y: auto; }
+        .qr-container { background: white; padding: 15px; }
+
+        .history-item { border-bottom: 1px solid #333; padding: 10px 0; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+        .history-win { color: var(--primary); }
+        .history-lose { color: var(--secondary); }
+
+        .vote-card { background: #111; border: 2px solid #333; padding: 20px 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; opacity: 0.8; }
+        .vote-card.selected { border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite; }
         .voting-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin: 30px 0; }
-        .vote-card {
-            background: #111; border: 2px solid #333; padding: 20px 10px;
-            border-radius: 8px; cursor: pointer; transition: 0.2s;
-            opacity: 0.8;
-        }
-        .vote-card:hover { transform: scale(1.05); opacity: 1; border-color: white; }
-        .vote-card.selected { 
-            border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); 
-            box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite;
-        }
-        .vote-card.selected::after {
-            content: "ELIMINATE"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
-            background: var(--secondary); color: white; font-size: 0.7rem; padding: 2px 6px; font-weight: bold;
-        }
-
-        /* --- RESULTS --- */
-        .result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
-        .win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
-        .win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
-
-        /* --- TOGGLE --- */
+        
         .toggle-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; opacity: 0.7; }
         .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -194,207 +127,338 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(26px); }
+
+        .top-icons { position: absolute; top: 10px; right: 10px; display: flex; gap: 10px; }
+        .icon-btn { background: none; border: 1px solid #333; color: #666; width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer; }
+        .icon-btn:hover { border-color: var(--text); color: var(--text); }
     </style>
 </head>
 <body>
 
-    <!-- BACKGROUND LAYERS -->
     <canvas id="matrixCanvas"></canvas>
     <div class="scanlines"></div>
 
-    <!-- MAIN APP -->
     <div id="app" class="container">
-        <!-- Default Content -->
-        <h1 id="loading-text" style="color:white; margin-top:30%;">INITIALIZING...</h1>
-        <p>System Boot Sequence</p>
-        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload()" style="margin-top:20px;">FORCE RESET</button>
+        <!-- Content JS -->
+        <h1 style="color:white; margin-top:30%;">INITIALIZING...</h1>
     </div>
 
-    <!-- QR MODAL -->
-    <div id="qrModal" class="modal-overlay" onclick="closeModal()">
-        <div class="qr-container" onclick="event.stopPropagation()">
+    <!-- MODALS -->
+    <div id="qrModal" class="modal-overlay" onclick="closeModal('qrModal')">
+        <div class="modal-content qr-container" onclick="event.stopPropagation()">
             <h2 style="color:#000; text-shadow:none;">SCAN TARGET</h2>
             <div id="qrTarget"></div>
-            <button class="btn btn-secondary" onclick="closeModal()" style="color:#000; border-color:#000; margin-top:20px;">DONE</button>
+            <button class="btn btn-secondary" onclick="closeModal('qrModal')" style="color:#000; border-color:#000; margin-top:20px;">DONE</button>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal-overlay" onclick="closeModal('historyModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>MISSION LOGS</h2>
+            <div id="historyList" style="margin-bottom: 20px;"></div>
+            <button class="btn btn-secondary" onclick="closeModal('historyModal')">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="dataModal" class="modal-overlay" onclick="closeModal('dataModal')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h2>SYSTEM DATA</h2>
+            <button class="btn btn-secondary" onclick="exportData()">💾 BACKUP DATA</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📂 RESTORE DATA</button>
+            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+            <hr style="border-color:#333; margin:20px 0;">
+            <button class="btn btn-danger" onclick="wipeData()">⚠️ FACTORY RESET</button>
+            <br>
+            <button class="btn btn-secondary" style="margin-top:20px" onclick="closeModal('dataModal')">CLOSE</button>
         </div>
     </div>
 
     <script>
-        // --- MATRIX RAIN EFFECT ---
-        const initMatrix = () => {
-            const canvas = document.getElementById('matrixCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテト';
-            const fontSize = 14;
-            const columns = canvas.width / fontSize;
-            const drops = [];
-            for(let x = 0; x < columns; x++) drops[x] = 1;
+        // --- 1. CONFIG & DATA ---
+        
+        // EDIT THESE PRESET NAMES
+        const PRESET_NAMES = ["Alex", "Sam", "Jordan", "Casey", "Riley", "Morgan"];
 
-            const draw = () => {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#0F0';
-                ctx.font = fontSize + 'px monospace';
-                for(let i = 0; i < drops.length; i++) {
-                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
-                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                    drops[i]++;
-                }
-            };
-            setInterval(draw, 33);
-            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-        };
-
-        // --- GAME DATA WITH HINTS ---
+        // EXPANDED DATASET (50+ Words)
         const GAME_DATA = {
             "Food": [
                 { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
                 { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
-                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" }
+                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, 
+                { w: "Curry", h: "Spicy / Sauce" }, { w: "Pancakes", h: "Breakfast / Syrup" }, { w: "Popcorn", h: "Movie / Salt" }
             ],
             "Animals": [
                 { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
                 { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
-                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" }
+                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, 
+                { w: "Frog", h: "Jump / Green" }, { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }
             ],
             "Jobs": [
                 { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
                 { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
-                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" }
+                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, 
+                { w: "Lawyer", h: "Court / Suit" }, { w: "Astronaut", h: "Space / Suit" }, { w: "Farmer", h: "Crops / Animals" }
             ],
             "Places": [
                 { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
                 { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
-                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" }
+                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, 
+                { w: "Gym", h: "Workout / Sweat" }, { w: "Airport", h: "Planes / Travel" }, { w: "Cinema", h: "Movies / Popcorn" }
             ],
-            "Household": [
-                { w: "Chair", h: "Sit / Legs" }, { w: "Toaster", h: "Bread / Hot" }, { w: "Phone", h: "Call / Screen" },
-                { w: "Shoe", h: "Foot / Walk" }, { w: "Umbrella", h: "Rain / Dry" }, { w: "Mirror", h: "Reflect / Glass" },
-                { w: "Fork", h: "Eat / Prongs" }, { w: "Laptop", h: "Computer / Fold" }, { w: "Bed", h: "Sleep / Soft" }, { w: "Lamp", h: "Light / Switch" }
+            "Tech": [
+                { w: "iPhone", h: "Apple / Call" }, { w: "Laptop", h: "Keyboard / Work" }, { w: "Robot", h: "AI / Metal" },
+                { w: "Drone", h: "Fly / Camera" }, { w: "VR Headset", h: "Goggles / 3D" }, { w: "Internet", h: "Web / Wifi" },
+                { w: "Bitcoin", h: "Crypto / Money" }, { w: "Tesla", h: "Electric / Car" }, { w: "Satellite", h: "Space / Signal" }
+            ],
+            "Movies": [
+                { w: "Star Wars", h: "Space / Swords" }, { w: "Harry Potter", h: "Magic / Wizard" }, { w: "Titanic", h: "Ship / Ice" },
+                { w: "Avengers", h: "Heroes / Marvel" }, { w: "Jurassic Park", h: "Dinos / T-Rex" }, { w: "Batman", h: "Bat / Hero" },
+                { w: "Frozen", h: "Ice / Song" }, { w: "Shrek", h: "Ogre / Green" }, { w: "Matrix", h: "Code / Red Pill" }
             ]
         };
 
-        // --- AUDIO SYSTEM ---
+        // --- 2. ENGINE & STATE ---
+        let state = {
+            step: 'LOBBY', players: [], passMode: false, passIndex: 0,
+            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
+            startTime: null, votedIndex: null, customWords: [],
+            speakerQueue: [], currentSpeaker: null // NEW: Turn Order
+        };
+
         const SFX_URLS = {
             click: 'https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3',
             scan: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3',
             reveal: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-click-900.mp3',
             alarm: 'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3',
             win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
-            lose: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3'
+            lose: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3',
+            decode: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-digital-text-readout-997.mp3'
         };
 
-        function playSfx(key) { 
-            try { 
-                if(SFX_URLS[key]) {
-                    const s = new Audio(SFX_URLS[key]);
-                    s.volume = 0.5; 
-                    s.play().catch(e => {}); 
-                }
-            } catch(e) {} 
-        }
+        const app = document.getElementById('app');
+        const params = new URLSearchParams(window.location.search);
 
+        function playSfx(key) { 
+            try { if(SFX_URLS[key]) { const s = new Audio(SFX_URLS[key]); s.volume = 0.4; s.play().catch(e=>{}); } } catch(e){} 
+        }
         function pulse(ms = 20) { if (navigator.vibrate) navigator.vibrate(ms); }
         async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
 
-        // --- STATE & CORE ---
-        let state = {
-            step: 'LOBBY', players: [], passMode: false, passIndex: 0,
-            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
-            startTime: null, votedIndex: null, customWords: []
-        };
-
-        const params = new URLSearchParams(window.location.search);
-        const app = document.getElementById('app');
-
+        // --- 3. INIT & MATRIX ---
         function init() {
             initMatrix();
             try {
-                if (params.has('data')) {
-                    renderPlayerScreen();
-                } else if (params.has('room')) {
-                    renderRoomSelection();
-                } else {
+                if (params.has('data')) renderPlayerScreen();
+                else if (params.has('room')) renderRoomSelection();
+                else {
                     let saved = null;
-                    try { saved = localStorage.getItem('imposterState'); } catch(e) {}
+                    try { saved = localStorage.getItem('imposterState'); } catch(e){}
                     if (saved) state = { ...state, ...JSON.parse(saved) };
                     if(state.step !== 'LOBBY') renderHostScreen(); else renderLobby();
                 }
-            } catch(err) {
-                app.innerHTML = `<h1>ERROR</h1><p>Resetting...</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>`;
-            }
+            } catch(e) { app.innerHTML = `<p>Error. Resetting.</p>`; localStorage.clear(); setTimeout(()=>location.reload(),1000); }
         }
 
-        // --- HOST LOGIC ---
-        function addPlayer() {
+        const initMatrix = () => {
+            const canvas = document.getElementById('matrixCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const chars = '01XY789ABCDEFZ'; const fontSize = 14;
+            const columns = canvas.width / fontSize; const drops = Array(Math.ceil(columns)).fill(1);
+            setInterval(() => {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+                for(let i = 0; i < drops.length; i++) {
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }, 33);
+        };
+
+        // --- 4. GAME LOGIC ---
+
+        function addPlayer(name) {
             const input = document.getElementById('nameInput');
-            const name = input.value.trim().toUpperCase();
-            if (!name) return;
-            if (state.players.includes(name)) return alert("Name taken!");
+            const val = name || input.value.trim().toUpperCase();
+            if (!val) return;
+            if (state.players.includes(val)) return alert("NAME EXISTS");
             playSfx('click');
-            state.players.push(name);
-            input.value = '';
+            state.players.push(val);
+            if(input) input.value = '';
             saveState();
             renderLobby();
-            setTimeout(() => { document.getElementById('nameInput').focus(); }, 10);
+            if(!name) setTimeout(() => { document.getElementById('nameInput').focus(); }, 10);
         }
 
-        function removePlayer(index) { state.players.splice(index, 1); saveState(); renderLobby(); }
-        function togglePassMode() { state.passMode = !state.passMode; playSfx('click'); renderLobby(); }
-        function resetGame() { playSfx('click'); state.step = 'LOBBY'; state.topic = null; state.secretWord = null; state.imposterIndex = null; saveState(); renderLobby(); }
-
+        function removePlayer(i) { state.players.splice(i, 1); saveState(); renderLobby(); }
+        
         function startGame(topicKey) {
             if (state.players.length < 3) return alert("Need 3+ players!");
             playSfx('scan');
             state.topic = topicKey;
 
             if (topicKey === 'CUSTOM') {
-                const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
+                const input = prompt("Words (comma separated):");
                 if (!input) return;
-                state.customWords = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
-                if (state.customWords.length < 2) return alert("Need 2+ words!");
+                state.customWords = input.split(',').map(w => w.trim()).filter(w => w.length);
+                if (state.customWords.length < 2) return alert("Need 2+ words");
                 state.secretWord = state.customWords[Math.floor(Math.random() * state.customWords.length)];
-                state.secretHint = "Custom Word";
+                state.secretHint = "Custom";
             } else {
-                const dataList = GAME_DATA[topicKey];
-                const item = dataList[Math.floor(Math.random() * dataList.length)];
-                state.secretWord = item.w;
-                state.secretHint = item.h;
+                const list = GAME_DATA[topicKey];
+                const item = list[Math.floor(Math.random() * list.length)];
+                state.secretWord = item.w; state.secretHint = item.h;
             }
 
             state.imposterIndex = Math.floor(Math.random() * state.players.length);
-            state.startTime = null;
-            state.votedIndex = null;
             state.step = state.passMode ? 'PASS_PREP' : 'QR_PREP';
             state.passIndex = 0;
-            saveState();
-            renderHostScreen();
+            saveState(); renderHostScreen();
         }
 
-        function startRound() { playSfx('alarm'); state.step = 'GAME'; state.startTime = Date.now(); saveState(); renderHostScreen(); requestWakeLock(); }
-        function startVoting() { playSfx('alarm'); state.step = 'VOTING'; saveState(); renderHostScreen(); }
-        function selectVote(i) { playSfx('click'); state.votedIndex = (state.votedIndex === i) ? null : i; renderHostScreen(); }
+        function startRound() {
+            playSfx('alarm');
+            state.step = 'GAME';
+            state.startTime = Date.now();
+            
+            // GENERATE RNG QUEUE
+            let queue = [...state.players];
+            // Fisher-Yates Shuffle
+            for (let i = queue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [queue[i], queue[j]] = [queue[j], queue[i]];
+            }
+            state.speakerQueue = queue;
+            state.currentSpeaker = null;
 
+            saveState(); renderHostScreen(); requestWakeLock();
+            nextSpeaker(); // Reveal first person
+        }
+
+        function nextSpeaker() {
+            if (state.speakerQueue.length === 0) {
+                // All spoken
+                state.currentSpeaker = "ALL DONE. DISCUSS!";
+                playSfx('alarm');
+                renderGame();
+                return;
+            }
+            playSfx('decode');
+            const next = state.speakerQueue.pop();
+            // Decrypt Animation
+            let el = document.getElementById('speakerDisp');
+            if(!el) { state.currentSpeaker = next; renderGame(); return; } // fallback
+            
+            let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let iter = 0;
+            let interval = setInterval(() => {
+                el.innerText = next.split('').map((l, i) => {
+                    if (i < iter) return next[i];
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join('');
+                if(iter >= next.length) { 
+                    clearInterval(interval); 
+                    state.currentSpeaker = next; 
+                    saveState();
+                    renderGame(); // Re-render to show "Next" button
+                    playSfx('reveal');
+                }
+                iter += 1/3;
+            }, 30);
+        }
+
+        function startVoting() { playSfx('alarm'); state.step = 'VOTING'; saveState(); renderHostScreen(); }
         function submitVote() {
-            if (state.votedIndex === null) return alert("Select the suspect!");
+            if (state.votedIndex === null) return alert("Select someone!");
             playSfx('reveal');
             state.step = 'RESULTS';
             saveState();
             renderHostScreen();
+            
+            // HISTORY LOGGING
             const imposterCaught = (state.votedIndex === state.imposterIndex);
+            saveHistory(imposterCaught);
+            
             setTimeout(() => { 
                 playSfx(imposterCaught ? 'win' : 'lose'); 
                 if(imposterCaught) try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} 
             }, 500);
         }
 
-        function saveState() { try { if(!params.has('data') && !params.has('room')) localStorage.setItem('imposterState', JSON.stringify(state)); } catch(e) {} }
+        // --- 5. DATA & HISTORY ---
 
-        // --- RENDERERS ---
+        function saveHistory(win) {
+            const log = JSON.parse(localStorage.getItem('imposterHistory')) || [];
+            log.unshift({
+                date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                topic: state.topic,
+                word: state.secretWord,
+                imposter: state.players[state.imposterIndex],
+                win: win
+            });
+            if(log.length > 20) log.pop();
+            localStorage.setItem('imposterHistory', JSON.stringify(log));
+        }
+
+        function exportData() {
+            const data = {
+                state: localStorage.getItem('imposterState'),
+                history: localStorage.getItem('imposterHistory')
+            };
+            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'imposter-backup.json';
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(data.state) localStorage.setItem('imposterState', data.state);
+                    if(data.history) localStorage.setItem('imposterHistory', data.history);
+                    alert("Data Restored!"); location.reload();
+                } catch(err) { alert("Invalid File"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function wipeData() {
+            if(confirm("DELETE EVERYTHING?")) { localStorage.clear(); location.reload(); }
+        }
+
+        function openModal(id) { 
+            document.getElementById(id).classList.add('active'); 
+            if(id === 'historyModal') renderHistoryList();
+        }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // --- 6. RENDERERS ---
+
+        function renderHistoryList() {
+            const log = JSON.parse(localStorage.getItem('imposterHistory')) || [];
+            const el = document.getElementById('historyList');
+            if(log.length === 0) { el.innerHTML = "<p>NO LOGS FOUND</p>"; return; }
+            el.innerHTML = log.map(g => `
+                <div class="history-item">
+                    <div>
+                        <div style="font-weight:bold">${g.topic} - ${g.word}</div>
+                        <div style="font-size:0.8rem; opacity:0.6">${g.date}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="${g.win ? 'history-win' : 'history-lose'}">${g.win ? 'CITIZENS' : 'IMPOSTER'}</div>
+                        <div style="font-size:0.8rem">Imp: ${g.imposter}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function renderHostScreen() {
             if(state.step === 'LOBBY') renderLobby();
             else if(state.step === 'QR_PREP') renderQrPrep();
@@ -406,20 +470,33 @@
 
         function renderLobby() {
             app.innerHTML = `
+                <div class="top-icons">
+                    <button class="icon-btn" onclick="openModal('historyModal')">📜</button>
+                    <button class="icon-btn" onclick="openModal('dataModal')">💾</button>
+                </div>
                 <h1>THE IMPOSTER</h1>
-                <p>CYBERPUNK EDITION</p>
+                <p>ULTIMATE EDITION</p>
+                
                 <div class="input-group">
                     <input type="text" id="nameInput" placeholder="ADD AGENT NAME" autocomplete="off" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button onclick="addPlayer()" style="background:none; border:none; color:var(--primary); font-size:1.5rem;">+</button>
                 </div>
+                
+                <!-- PRESETS -->
+                <div class="grid-names" style="margin-bottom:10px; opacity:0.8;">
+                    ${PRESET_NAMES.map(n => `<div class="name-chip preset-chip" onclick="addPlayer('${n}')">+ ${n}</div>`).join('')}
+                </div>
+                
                 <div class="grid-names">
                     ${state.players.map((p, i) => `<div class="name-chip" onclick="removePlayer(${i})">${p}</div>`).join('')}
                 </div>
+
                 <div class="toggle-wrapper">
                     <span>📱 QR MODE</span>
                     <label class="switch"><input type="checkbox" ${state.passMode ? 'checked' : ''} onchange="togglePassMode()"><span class="slider"></span></label>
                     <span>🤝 PASS MODE</span>
                 </div>
+
                 ${state.players.length >= 3 ? `
                     <div class="topic-grid">
                         ${Object.keys(GAME_DATA).map(t => `<div class="topic-card" onclick="startGame('${t}')">${t}</div>`).join('')}
@@ -432,12 +509,7 @@
         function renderQrPrep() {
             app.innerHTML = `
                 <h2>Topic: ${state.topic}</h2>
-                <div class="grid-names" style="gap:15px; margin-top:30px;">
-                    <button class="btn" style="border-color:var(--accent); color:var(--accent); padding:25px;" onclick="showRoomQR()">
-                        🏠 SHOW ROOM QR <br><span style="font-size:0.8rem">(Scan once for everyone)</span>
-                    </button>
-                </div>
-                <p style="margin:20px 0;">-- OR INDIVIDUAL --</p>
+                <button class="btn" style="border-color:var(--accent); color:var(--accent); padding:20px; margin-bottom:20px;" onclick="showRoomQR()">🏠 SHOW ROOM QR</button>
                 <div class="grid-names">
                     ${state.players.map((p, i) => `<button class="btn btn-secondary" onclick="showPlayerQR(${i})" style="width:auto; padding:10px;">📱 ${p}</button>`).join('')}
                 </div>
@@ -450,20 +522,22 @@
             app.innerHTML = `
                 <h2 style="color:var(--primary)">MISSION ACTIVE</h2>
                 <p>Topic: <strong style="color:white">${state.topic}</strong></p>
-                <div id="timer" style="font-size: 6rem; font-family:var(--font); color:var(--text); text-shadow: 0 0 20px var(--primary); margin: 30px 0;">0:00</div>
-                <p>Interrogate. Find the glitch.</p>
-                <button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button>
+                
+                <!-- SPEAKER REVEAL AREA -->
+                <div class="speaker-box">
+                    <div style="font-size:0.8rem; letter-spacing:2px; margin-bottom:5px;">CURRENT SPEAKER</div>
+                    <div id="speakerDisp" class="speaker-name">${state.currentSpeaker || "INITIALIZING..."}</div>
+                </div>
+                
+                ${state.speakerQueue.length > 0 ? 
+                  `<button class="btn" onclick="nextSpeaker()">>>> NEXT SPEAKER</button>` : 
+                  `<p style="color:var(--accent)">ALL AGENTS HAVE SPOKEN</p>`
+                }
+
+                <div style="margin-top:30px">
+                    <button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button>
+                </div>
             `;
-            const timerEl = document.getElementById('timer');
-            const update = () => {
-                if(state.step !== 'GAME') return;
-                const diff = Math.floor((Date.now() - state.startTime) / 1000);
-                const m = Math.floor(diff / 60);
-                const s = (diff % 60).toString().padStart(2, '0');
-                if(timerEl) timerEl.innerText = `${m}:${s}`;
-                requestAnimationFrame(update);
-            };
-            update();
         }
 
         function renderVoting() {
@@ -471,7 +545,7 @@
                 <h1 style="color:var(--secondary); animation:pulse-red 2s infinite;">VOTING PHASE</h1>
                 <p>Who is the Imposter?</p>
                 <div class="voting-grid">
-                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="selectVote(${i})"><div style="font-size:2rem; margin-bottom:10px;">👤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
+                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="state.votedIndex = (state.votedIndex === ${i}) ? null : ${i}; renderHostScreen(); playSfx('click');"><div style="font-size:2rem; margin-bottom:10px;">👤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
                 </div>
                 <button class="btn btn-danger" onclick="submitVote()">EXECUTE SELECTED</button>
             `;
@@ -480,141 +554,68 @@
         function renderResults() {
             const imposterCaught = (state.votedIndex === state.imposterIndex);
             const imposterName = state.players[state.imposterIndex];
-            const resultTitle = imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS";
-            const bannerClass = imposterCaught ? "win-citizen" : "win-imposter";
-            
             app.innerHTML = `
-                <div class="result-banner ${bannerClass}">
-                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${resultTitle}</h1>
+                <div style="padding:30px; margin:20px 0; border:2px solid; text-transform:uppercase; ${imposterCaught ? 'border-color:var(--primary); background:rgba(0,255,0,0.1);' : 'border-color:var(--secondary); background:rgba(255,0,85,0.1);'}">
+                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS"}</h1>
                     <p style="color:inherit; margin:0;">${imposterCaught ? "Glitch Neutralized" : "System Compromised"}</p>
                 </div>
                 <div style="display:flex; gap:10px; text-align:left;">
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET WORD</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>REAL IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
                 </div>
                 <button class="btn" onclick="resetGame()">NEW MISSION</button>
             `;
         }
 
-        // --- ROOM/PLAYER LOGIC ---
-        function renderRoomSelection() {
-            let roomData;
-            try { roomData = JSON.parse(atob(params.get('room'))); } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
-            
-            const savedName = localStorage.getItem('imposter_id_' + roomData.id);
-            if(savedName) {
-                const p = roomData.players.find(x => x.name === savedName);
-                if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, roomData.topic);
-            }
-
-            app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">
-                ${roomData.players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${roomData.topic}', '${roomData.id}')"><strong>${p.name}</strong><span>👉</span></button>`).join('')}
-            </div>`;
-        }
-
-        function claimIdentity(name, role, word, hint, topic, roomId) {
-            if(confirm(`Are you ${name}?`)) {
-                localStorage.setItem('imposter_id_' + roomId, name);
-                renderPlayerIdentity(name, role, word, hint, topic);
-            }
-        }
-
-        function renderPlayerIdentity(name, role, word, hint, topic) {
-            const isImposter = (role === 'IMPOSTER');
-            const displayWord = isImposter ? "YOU ARE THE<br>IMPOSTER" : word;
-            const displayHint = isImposter ? ("HINT: " + hint) : "Citizen";
-            const color = isImposter ? 'color:var(--secondary)' : 'color:var(--primary)';
-
-            app.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">
-                    <span>AGENT: <strong>${name}</strong></span><span style="font-size:0.8rem; opacity:0.7;">${topic}</span>
-                </div>
-                <div class="secret-box" id="mobileBox">
-                    <div class="fingerprint-icon">☝️</div>
-                    <div class="secret-content" style="${color}">${displayWord}</div>
-                    ${isImposter ? `<div class="hint-text">${displayHint}</div>` : ''}
-                </div>
-                <p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>
-                <div style="margin-top:50px; border-top:1px solid #333; padding-top:20px;">
-                    <p style="font-size:0.8rem; margin-bottom:5px;">TOOLS</p>
-                    <button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">🗳️ OPEN VOTING GUIDE</button>
-                </div>
-            `;
-            bindRevealEvents('mobileBox', isImposter);
-        }
-
-        function renderPlayerScreen() {
-            let data;
-            try { data = JSON.parse(atob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; }
-            renderPlayerIdentity(data.name, data.role, data.word, data.hint, data.topic);
-        }
-
-        // --- UTILS ---
-        function bindRevealEvents(id, isImposter) {
-            const box = document.getElementById(id);
-            if(!box) return;
-            const reveal = (e) => {
-                if(e.cancelable) e.preventDefault();
-                if(!box.classList.contains('revealing')) {
-                    playSfx('reveal');
-                    if(isImposter) pulse([100, 50, 100]); else pulse(20);
-                }
-                box.classList.add('revealing');
-            };
-            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
-            ['touchstart', 'mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false}));
-            ['touchend', 'mouseup', 'mouseleave'].forEach(evt => box.addEventListener(evt, hide));
-        }
-
+        // --- MOBILE/ROOM/QR LOGIC ---
         function showPlayerQR(i) {
             playSfx('click');
-            const p = state.players[i];
-            const isImp = (i === state.imposterIndex);
+            const p = state.players[i]; const isImp = (i === state.imposterIndex);
             const payload = { name: p, topic: state.topic, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
             generateQR(payload, `Scan for ${p}`, 'data');
         }
-
         function showRoomQR() {
             playSfx('click');
             const id = Date.now().toString();
-            const payload = {
-                id: id, topic: state.topic,
-                players: state.players.map((p, i) => {
-                    const isImp = (i === state.imposterIndex);
-                    return { name: p, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null };
-                })
-            };
+            const payload = { id: id, topic: state.topic, players: state.players.map((p, i) => { const isImp = (i === state.imposterIndex); return { name: p, role: isImp ? 'IMPOSTER' : 'CITIZEN', word: isImp ? null : state.secretWord, hint: isImp ? state.secretHint : null }; }) };
             generateQR(payload, "Scan to Join Room", 'room');
         }
-
         function generateQR(payload, text, param) {
             const url = `${window.location.origin}${window.location.pathname}?${param}=${btoa(JSON.stringify(payload))}`;
-            const target = document.getElementById('qrTarget');
-            target.innerHTML = '';
+            const target = document.getElementById('qrTarget'); target.innerHTML = '';
             document.querySelector('#qrModal h2').innerText = text;
             new QRCode(target, { text: url, width: 250, height: 250 });
-            document.getElementById('qrModal').classList.add('active');
+            openModal('qrModal');
         }
 
-        function closeModal() { playSfx('click'); document.getElementById('qrModal').classList.remove('active'); }
-
-        function renderPassPrep() {
-            const p = state.players[state.passIndex];
-            app.innerHTML = `<h2>PASS DEVICE</h2><h1 style="font-size:2.5rem; color:var(--primary); margin:30px 0;">${p}</h1><button class="btn" onclick="renderPassReveal()">I AM ${p}</button>`;
+        function renderRoomSelection() {
+            let roomData; try { roomData = JSON.parse(atob(params.get('room'))); } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
+            const savedName = localStorage.getItem('imposter_id_' + roomData.id);
+            if(savedName) { const p = roomData.players.find(x => x.name === savedName); if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, roomData.topic); }
+            app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">${roomData.players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="if(confirm('Are you ${p.name}?')){localStorage.setItem('imposter_id_${roomData.id}', '${p.name}'); renderPlayerIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${roomData.topic}');}"><strong>${p.name}</strong><span>👉</span></button>`).join('')}</div>`;
         }
+        function renderPlayerIdentity(name, role, word, hint, topic) {
+            const isImposter = (role === 'IMPOSTER');
+            app.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;"><span>AGENT: <strong>${name}</strong></span><span style="font-size:0.8rem; opacity:0.7;">${topic}</span></div><div class="secret-box" id="mobileBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${isImposter?'color:var(--secondary)':'color:var(--primary)'}">${isImposter?"YOU ARE THE<br>IMPOSTER":word}</div>${isImposter?`<div class="hint-text">HINT: ${hint}</div>`:''}</div><p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>`;
+            const box = document.getElementById('mobileBox');
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); if(!box.classList.contains('revealing')) { playSfx('reveal'); if(isImposter) pulse([100,50,100]); else pulse(20); } box.classList.add('revealing'); };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
+            ['touchstart','mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false})); ['touchend','mouseup','mouseleave'].forEach(evt => box.addEventListener(evt, hide));
+        }
+        function renderPlayerScreen() { let data; try { data = JSON.parse(atob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; } renderPlayerIdentity(data.name, data.role, data.word, data.hint, data.topic); }
+        
+        // Pass Mode (Legacy)
+        function renderPassPrep() { const p = state.players[state.passIndex]; app.innerHTML = `<h2>PASS DEVICE</h2><h1 style="font-size:2.5rem; color:var(--primary); margin:30px 0;">${p}</h1><button class="btn" onclick="renderPassReveal()">I AM ${p}</button>`; }
         function renderPassReveal() {
             const isImp = (state.passIndex === state.imposterIndex);
-            const word = isImp ? "YOU ARE THE<br>IMPOSTER" : state.secretWord;
-            const hint = isImp ? ("HINT: " + state.secretHint) : "Citizen";
-            const color = isImp ? 'color:var(--secondary)' : 'color:var(--primary)';
-            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${color}">${word}</div>${isImp ? `<div class="hint-text">${hint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
-            bindRevealEvents('passBox', isImp);
-            // Allow clicking next after revealing
+            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${isImp?'color:var(--secondary)':'color:var(--primary)'}">${isImp?"YOU ARE THE<br>IMPOSTER":state.secretWord}</div>${isImp?`<div class="hint-text">HINT: ${state.secretHint}</div>`:''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
             const box = document.getElementById('passBox');
-            const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
-            box.addEventListener('mousedown', enableBtn);
-            box.addEventListener('touchstart', enableBtn);
+            const reveal = (e) => { if(e.cancelable) e.preventDefault(); if(!box.classList.contains('revealing')) { playSfx('reveal'); if(isImp) pulse([100,50,100]); else pulse(20); } box.classList.add('revealing'); document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
+            const hide = (e) => { if(e.cancelable) e.preventDefault(); box.classList.remove('revealing'); };
+            ['touchstart','mousedown'].forEach(evt => box.addEventListener(evt, reveal, {passive:false})); ['touchend','mouseup','mouseleave'].forEach(evt => box.addEventListener(evt, hide));
         }
+
+        function saveState() { try { if(!params.has('data') && !params.has('room')) localStorage.setItem('imposterState', JSON.stringify(state)); } catch(e) {} }
 
         init();
     </script>
