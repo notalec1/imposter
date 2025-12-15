@@ -280,7 +280,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // --- PRESET NAMES ---
         const PRESET_NAMES = [
             "ALEC", "ALAIN", "NADA", "HODA", "FADI", "NOA", "GIO", "NEO", 
@@ -401,11 +401,15 @@
             imposterIndices: [], glitchIndex: null,
             startTime: null, votedIndex: null, customWords: [],
             history: [], startingPlayer: null,
-            settings: { timer: 180, imposterCount: 1, hasGlitch: false, timerMode: 'COUNTDOWN' } // ADDED timerMode
+            settings: { timer: 180, imposterCount: 1, hasGlitch: false, timerMode: 'COUNTDOWN' }
         };
 
         const params = new URLSearchParams(window.location.search);
         const app = document.getElementById('app');
+
+        // Safe Base64 Encoder/Decoder for Emojis/Unicode
+        function safeBtoa(str) { return btoa(unescape(encodeURIComponent(str))); }
+        function safeAtob(str) { return decodeURIComponent(escape(atob(str))); }
 
         function init() {
             initMatrix();
@@ -420,7 +424,7 @@
                     if (saved) {
                         const parsed = JSON.parse(saved);
                         state = { ...state, ...parsed };
-                        // Migration for old saves
+                        // Migration
                         if(!state.settings) state.settings = { timer: 180, imposterCount: 1, hasGlitch: false, timerMode: 'COUNTDOWN' };
                         if(!state.settings.timerMode) state.settings.timerMode = 'COUNTDOWN';
                         if(typeof state.imposterIndex !== 'undefined') { state.imposterIndices = [state.imposterIndex]; delete state.imposterIndex; }
@@ -450,7 +454,6 @@
         function removePlayer(index) { state.players.splice(index, 1); saveState(); renderLobby(); }
         function togglePassMode() { state.passMode = !state.passMode; playSfx('click'); renderLobby(); }
         
-        // SETTINGS TOGGLES
         function adjustTimer(sec) { state.settings.timer = Math.max(60, state.settings.timer + sec); saveState(); renderLobby(); }
         function toggleImposterCount() { state.settings.imposterCount = (state.settings.imposterCount === 1) ? 2 : 1; saveState(); renderLobby(); }
         function toggleGlitch() { state.settings.hasGlitch = !state.settings.hasGlitch; saveState(); renderLobby(); }
@@ -469,14 +472,12 @@
 
         function startGame(topicKey) {
             if (state.players.length < 3) return alert("Need 3+ players!");
-            // Check count for advanced roles
             if (state.settings.imposterCount === 2 && state.players.length < 5) return alert("Need 5+ players for 2 Imposters!");
             if (state.settings.hasGlitch && state.players.length < 4) return alert("Need 4+ players for Glitch!");
 
             playSfx('scan');
             state.topic = topicKey;
 
-            // WORD SELECTION
             if (topicKey === 'CUSTOM') {
                 const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
                 if (!input) return;
@@ -499,7 +500,6 @@
                 state.secretHint = item.h;
             }
 
-            // ROLE ASSIGNMENT
             let indices = state.players.map((_, i) => i);
             for (let i = indices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -530,7 +530,6 @@
             playSfx('alarm'); 
             state.step = 'GAME'; 
             state.startTime = Date.now(); 
-            // Apply Timer Preset
             state.endTime = Date.now() + (state.settings.timer * 1000);
             saveState(); 
             renderHostScreen(); 
@@ -553,9 +552,7 @@
             playSfx('reveal');
             state.step = 'RESULTS';
             
-            // WIN LOGIC
             let winner = "CITIZENS";
-            
             if (state.imposterIndices.includes(state.votedIndex)) {
                 winner = "CITIZENS"; 
             } else if (state.votedIndex === state.glitchIndex) {
@@ -564,7 +561,6 @@
                 winner = "IMPOSTERS"; 
             }
 
-            // HISTORY
             state.history.unshift({
                 date: new Date().toLocaleString(),
                 topic: state.topic,
@@ -619,7 +615,6 @@
                     ${state.players.map((p, i) => `<div class="name-chip" onclick="removePlayer(${i})">${p}</div>`).join('')}
                 </div>
                 
-                <!-- MISSION SETTINGS -->
                 <div class="settings-panel">
                     <h2 style="font-size:0.8rem; margin:0 0 10px 0;">MISSION PARAMETERS</h2>
                     <div class="control-row">
@@ -663,61 +658,27 @@
             `;
         }
 
-        // --- FIXED LEADERBOARD LOGIC ---
         function renderStats() {
-            // Initialize stats for ALL players seen in history + current players
             const stats = {};
             const allKnownPlayers = new Set([...state.players]);
-
-            // Scan history for more names
             state.history.forEach(h => {
-                if(h.imposters) {
-                    h.imposters.split(', ').forEach(n => allKnownPlayers.add(n));
-                }
+                if(h.imposters) h.imposters.split(', ').forEach(n => allKnownPlayers.add(n));
             });
-
-            allKnownPlayers.forEach(p => {
-                stats[p] = { plays: 0, citWins: 0, impWins: 0, totalWins: 0 };
-            });
+            allKnownPlayers.forEach(p => { stats[p] = { plays: 0, citWins: 0, impWins: 0, totalWins: 0 }; });
             
             state.history.forEach(h => {
-                const impsStr = h.imposters || ""; // Safety check
-                const imps = impsStr.split(', ');
-                const winner = h.winner;
-                
-                // We don't have a full record of who played each game in history object (just imposter list),
-                // so we can only calculate wins based on role presence.
-                // NOTE: This stats system is imperfect without full player lists per game history.
-                // We will count wins for people we KNOW were involved (imposters) or assume active players were involved.
-                // For simplicity/robustness: We track Imposter Wins vs Citizen Wins.
-                
-                // If Citizens won, we don't know exactly who the citizens were in that old game. 
-                // So we will just track Imposter Performance for now, or just global wins if in lobby.
-                // REVISION: To fix "Leaderboard doesn't load", we ensure no crash.
-                // Let's implement a simple "Imposter Win Rate" for named imposters, and generic wins.
-                
-                if (winner === "IMPOSTERS") {
-                    imps.forEach(impName => {
-                        if(stats[impName]) stats[impName].impWins++;
-                        if(stats[impName]) stats[impName].totalWins++;
-                    });
+                const imps = (h.imposters || "").split(', ');
+                if (h.winner === "IMPOSTERS") {
+                    imps.forEach(impName => { if(stats[impName]) { stats[impName].impWins++; stats[impName].totalWins++; } });
                 }
-                // It is hard to retroactively give points to citizens without storing the player list per game.
-                // I will update the code to only show stats if we have data, ensuring no crash.
             });
             
-            // To make it useful immediately, let's just show current lobby stats if history is empty/complex
-            // Or assume everyone in the current lobby played the previous games (common in party setting).
             state.history.forEach(h => {
                 const imps = (h.imposters || "").split(', ');
                 state.players.forEach(p => {
                     const wasImp = imps.includes(p);
-                    if (h.winner === "CITIZENS" && !wasImp) {
-                        stats[p].citWins++;
-                        stats[p].totalWins++;
-                    } else if (h.winner === "IMPOSTERS" && wasImp) {
-                        // Already counted above, but let's be safe
-                        // Logic above was for allKnown, this is for current state.players
+                    if (h.winner === "CITIZENS" && !wasImp && stats[p]) {
+                        stats[p].citWins++; stats[p].totalWins++;
                     }
                 });
             });
@@ -752,14 +713,11 @@
                 <div style="margin: 30px 0;">
                     <p>Backup or Restore Mission Data</p>
                     <button class="btn" onclick="exportData()">DOWNLOAD DATA</button>
-                    
                     <div style="position:relative; margin-top:15px;">
                         <button class="btn btn-secondary">UPLOAD DATA</button>
                         <input type="file" onchange="importData(this)" style="position:absolute; left:0; top:0; width:100%; height:100%; opacity:0; cursor:pointer;">
                     </div>
-                    
                     <button class="btn btn-danger" onclick="if(confirm('Wipe all data?')){localStorage.clear(); location.reload();}" style="margin-top:40px;">FACTORY RESET</button>
-                    
                     <button class="btn btn-secondary" onclick="state.step='LOBBY'; renderHostScreen();" style="margin-top:20px;">BACK</button>
                 </div>
             `;
@@ -835,19 +793,15 @@
             app.innerHTML = `
                 <h2 style="color:var(--primary)">MISSION ACTIVE</h2>
                 <p>Topic: <strong style="color:white">${state.topic}</strong></p>
-                
                 <div id="starter-box" class="turn-display">
                     STARTS: <span id="starter-name">DECRYPTING...</span>
                 </div>
-
                 <div id="timer" style="font-size: 5rem; font-family:var(--font); color:var(--text); text-shadow: 0 0 20px var(--primary); margin: 10px 0;">0:00</div>
                 <div style="display:flex; justify-content:center; gap:20px; opacity:0.8; margin-bottom:20px;">
                     <button class="btn btn-small" style="width:70px" onclick="modifyTime(-10)">-10S</button>
                     <button class="btn btn-small" style="width:70px" onclick="modifyTime(10)">+10S</button>
                 </div>
-                
                 <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">🎲 SPIN NEXT SPEAKER</button>
-
                 <div style="margin-top:40px;">
                     <button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button>
                 </div>
@@ -861,21 +815,16 @@
                 let display = "0:00";
                 
                 if (state.settings.timerMode === 'STOPWATCH') {
-                    // Stopwatch: Count UP from 0
                     const diff = Math.floor((now - state.startTime) / 1000);
                     const m = Math.floor(diff / 60);
                     const s = (diff % 60).toString().padStart(2, '0');
                     display = `${m}:${s}`;
                 } else {
-                    // Countdown
                     const remaining = Math.floor((state.endTime - now) / 1000);
-                    
                     if (remaining > 0) {
                         const m = Math.floor(remaining / 60);
                         const s = (remaining % 60).toString().padStart(2, '0');
                         display = `${m}:${s}`;
-                        
-                        // Meltdown visual warning
                         if(remaining <= 30) {
                             timerEl.classList.add('critical');
                             document.body.classList.add('meltdown');
@@ -884,17 +833,12 @@
                             document.body.classList.remove('meltdown');
                         }
                     } else {
-                        // Time UP / Overtime
                         const overtime = Math.abs(remaining);
                         const s = (overtime % 60).toString().padStart(2, '0');
                         display = `-${Math.floor(overtime/60)}:${s}`;
-                        
                         timerEl.classList.add('critical');
                         document.body.classList.add('meltdown');
-                        if(!playedAlarm) {
-                            playSfx('alarm');
-                            playedAlarm = true;
-                        }
+                        if(!playedAlarm) { playSfx('alarm'); playedAlarm = true; }
                     }
                 }
                 
@@ -905,11 +849,10 @@
         }
 
         function modifyTime(seconds) {
-            // Adjust timer logic depending on mode
             if (state.settings.timerMode === 'STOPWATCH') {
-                state.startTime -= (seconds * 1000); // Reduce start time to increase count
+                state.startTime -= (seconds * 1000);
             } else {
-                state.endTime += (seconds * 1000); // Increase end time to extend count
+                state.endTime += (seconds * 1000);
             }
         }
 
@@ -917,19 +860,16 @@
             const el = document.getElementById('starter-name');
             const box = document.getElementById('starter-box');
             if(!el) return;
-            
             box.classList.add('animate');
             let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             let iterations = 0;
             const target = state.startingPlayer;
-            
             const interval = setInterval(() => {
                 playSfx('roulette');
                 el.innerText = target.split('').map((letter, index) => {
                     if(index < iterations) return target[index];
                     return chars[Math.floor(Math.random() * chars.length)]
                 }).join('');
-                
                 if(iterations >= target.length){ 
                     clearInterval(interval);
                     box.classList.remove('animate');
@@ -937,7 +877,6 @@
                     box.style.borderColor = 'var(--primary)';
                     box.style.color = 'var(--primary)';
                 }
-                
                 if(Math.random() > 0.5) iterations += 0.5; 
             }, 50);
         }
@@ -950,7 +889,6 @@
             box.style.color = 'var(--accent)';
             box.classList.add('animate');
             box.innerHTML = `NEXT: <span id="spin-target">...</span>`;
-            
             let spinCount = 0;
             const spinInt = setInterval(() => {
                 playSfx('roulette');
@@ -1014,19 +952,42 @@
             `;
         }
 
-        // --- ROOM/PLAYER LOGIC ---
+        // --- UPDATED MINIFIED ROOM LOGIC ---
         function renderRoomSelection() {
             let roomData;
-            try { roomData = JSON.parse(atob(params.get('room'))); } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
+            try { 
+                const raw = params.get('room');
+                roomData = JSON.parse(safeAtob(raw)); 
+            } catch(e) { app.innerHTML = "ROOM ERROR"; return; }
             
-            const savedName = localStorage.getItem('imposter_id_' + roomData.id);
+            // Check if minified or legacy
+            let players = roomData.players || [];
+            if (roomData.p) {
+                // Minified format: [Name, RoleInt, Secret]
+                players = roomData.p.map(arr => {
+                    const rMap = ['CITIZEN', 'IMPOSTER', 'GLITCH'];
+                    const r = rMap[arr[1]];
+                    return {
+                        name: arr[0],
+                        role: r,
+                        word: (r === 'CITIZEN') ? arr[2] : null,
+                        hint: (r === 'IMPOSTER') ? arr[2] : null
+                    };
+                });
+            }
+            
+            // Store Room ID
+            const rId = roomData.id || roomData.i;
+            const rTopic = roomData.topic || roomData.t;
+
+            const savedName = localStorage.getItem('imposter_id_' + rId);
             if(savedName) {
-                const p = roomData.players.find(x => x.name === savedName);
-                if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, roomData.topic);
+                const p = players.find(x => x.name === savedName);
+                if(p) return renderPlayerIdentity(p.name, p.role, p.word, p.hint, rTopic);
             }
 
             app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">
-                ${roomData.players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${roomData.topic}', '${roomData.id}')"><strong>${p.name}</strong><span>👉</span></button>`).join('')}
+                ${players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${rTopic}', '${rId}')"><strong>${p.name}</strong><span>👉</span></button>`).join('')}
             </div>`;
         }
 
@@ -1072,11 +1033,10 @@
 
         function renderPlayerScreen() {
             let data;
-            try { data = JSON.parse(atob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; }
+            try { data = JSON.parse(safeAtob(params.get('data'))); } catch(e) { app.innerHTML = "LINK ERROR"; return; }
             renderPlayerIdentity(data.name, data.role, data.word, data.hint, data.topic);
         }
 
-        // --- UTILS ---
         function bindRevealEvents(id, isSecretRole) {
             const box = document.getElementById(id);
             if(!box) return;
@@ -1096,55 +1056,62 @@
         function showPlayerQR(i) {
             playSfx('click');
             const p = state.players[i];
-            
             let role = 'CITIZEN';
             let word = state.secretWord;
             let hint = null;
-
             if (state.imposterIndices.includes(i)) {
-                role = 'IMPOSTER';
-                word = null;
-                hint = state.secretHint;
+                role = 'IMPOSTER'; word = null; hint = state.secretHint;
             } else if (i === state.glitchIndex) {
-                role = 'GLITCH';
-                word = null;
+                role = 'GLITCH'; word = null;
             }
-
             const payload = { name: p, topic: state.topic, role: role, word: word, hint: hint };
             generateQR(payload, `Scan for ${p}`, 'data');
         }
 
+        // --- NEW COMPRESSED QR LOGIC ---
         function showRoomQR() {
             playSfx('click');
-            const id = Date.now().toString();
-            const payload = {
-                id: id, topic: state.topic,
-                players: state.players.map((p, i) => {
-                    let role = 'CITIZEN';
-                    let word = state.secretWord;
-                    let hint = null;
-
+            try {
+                const id = Date.now().toString();
+                // Create Minified Payload
+                // Format: { i: id, t: topic, p: [ [Name, RoleInt, Secret] ] }
+                // RoleInt: 0=Cit, 1=Imp, 2=Glitch
+                // Secret: Word (if 0), Hint (if 1), null (if 2)
+                const minPlayers = state.players.map((p, i) => {
+                    let rInt = 0; // Citizen
+                    let secret = state.secretWord;
+                    
                     if (state.imposterIndices.includes(i)) {
-                        role = 'IMPOSTER';
-                        word = null;
-                        hint = state.secretHint;
+                        rInt = 1; secret = state.secretHint;
                     } else if (i === state.glitchIndex) {
-                        role = 'GLITCH';
-                        word = null;
+                        rInt = 2; secret = null;
                     }
-                    return { name: p, role: role, word: word, hint: hint };
-                })
-            };
-            generateQR(payload, "Scan to Join Room", 'room');
+                    return [p, rInt, secret];
+                });
+
+                const payload = { i: id, t: state.topic, p: minPlayers };
+                generateQR(payload, "Scan to Join Room", 'room');
+            } catch(e) {
+                alert("Error generating QR: " + e.message);
+            }
         }
 
         function generateQR(payload, text, param) {
-            const url = `${window.location.origin}${window.location.pathname}?${param}=${btoa(JSON.stringify(payload))}`;
-            const target = document.getElementById('qrTarget');
-            target.innerHTML = '';
-            document.querySelector('#qrModal h2').innerText = text;
-            new QRCode(target, { text: url, width: 250, height: 250 });
-            document.getElementById('qrModal').classList.add('active');
+            try {
+                const jsonStr = JSON.stringify(payload);
+                const encoded = safeBtoa(jsonStr);
+                const url = `${window.location.origin}${window.location.pathname}?${param}=${encoded}`;
+                
+                const target = document.getElementById('qrTarget');
+                target.innerHTML = '';
+                document.querySelector('#qrModal h2').innerText = text;
+                
+                // If payload is huge, we might still hit limits, but minification helps significantly
+                new QRCode(target, { text: url, width: 250, height: 250, correctLevel: QRCode.CorrectLevel.L });
+                document.getElementById('qrModal').classList.add('active');
+            } catch(e) {
+                alert("Data too large for QR Code. Try fewer players.");
+            }
         }
 
         function closeModal() { playSfx('click'); document.getElementById('qrModal').classList.remove('active'); }
@@ -1159,7 +1126,6 @@
             let displayHint = "Citizen";
             let color = 'color:var(--primary)';
             let isSecret = false;
-
             if (state.imposterIndices.includes(i)) {
                 displayWord = "YOU ARE THE<br>IMPOSTER";
                 displayHint = "HINT: " + state.secretHint;
@@ -1171,10 +1137,8 @@
                 color = 'color:var(--warning)';
                 isSecret = true;
             }
-
             app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">☝️</div><div class="secret-content" style="${color}">${displayWord}</div>${isSecret ? `<div class="hint-text">${displayHint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
             bindRevealEvents('passBox', isSecret);
-            // Allow clicking next after revealing
             const box = document.getElementById('passBox');
             const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
             box.addEventListener('mousedown', enableBtn);
