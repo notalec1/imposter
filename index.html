@@ -3,19 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THE IMPOSTER: Matrix Edition</title>
+    <title>THE IMPOSTER: Cyberpunk</title>
     
-    <!-- ERROR HANDLER -->
-    <script>
-        window.onerror = function(msg, url, line) {
-            const div = document.getElementById('debug-console');
-            if(div) {
-                div.style.display = 'block';
-                div.innerHTML += `<div>❌ ${msg} <small>${line}</small></div>`;
-            }
-        };
-    </script>
-
     <!-- FONTS & LIBS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
@@ -23,12 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
+        /* --- ORIGINAL CYBERPUNK THEME --- */
         :root {
-            --bg: #000000;
-            --surface: rgba(10, 10, 10, 0.85);
-            --primary: #0f0; 
-            --secondary: #f0f;
-            --accent: #0ff; 
+            --bg: #050505;
+            --surface: #111;
+            --primary: #0f0; /* Terminal Green */
+            --secondary: #f0f; /* Magenta */
+            --accent: #0ff; /* Cyan */
             --text: #eee;
             --font: 'Space Grotesk', monospace;
         }
@@ -44,39 +34,37 @@
             min-height: 100vh; overflow-x: hidden;
         }
 
-        /* --- MATRIX CANVAS --- */
+        /* --- LAYERS --- */
         #matrixCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; opacity: 0.3; /* Subtle background */
-            pointer-events: none;
+            z-index: 0; opacity: 0.25; pointer-events: none;
         }
 
-        /* --- CRT SCANLINES (Layered on top of Matrix) --- */
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%);
             background-size: 100% 4px; 
-            pointer-events: none; z-index: 1; opacity: 0.4;
+            pointer-events: none; z-index: 1; opacity: 0.6;
         }
 
         .container { 
             width: 100%; max-width: 600px; text-align: center; 
             z-index: 10; position: relative; 
-            background: var(--surface); /* Dark backing to make text readable over Matrix */
-            padding: 20px; border-radius: 16px;
-            border: 1px solid #333;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
+            /* Added slight background to make text readable over matrix */
+            background: rgba(5, 5, 5, 0.85); 
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* --- TYPOGRAPHY --- */
+        /* --- TYPOGRAPHY (Original Glitch Style) --- */
         h1 { 
             font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; 
             color: var(--primary); text-shadow: 2px 2px var(--secondary);
             animation: glitch 1s linear infinite;
         }
         h2 { font-size: 1.2rem; color: var(--accent); opacity: 0.9; text-transform: uppercase; margin-bottom: 20px; }
-        p { color: #aaa; line-height: 1.5; }
+        p { color: #888; line-height: 1.5; }
 
         @keyframes glitch {
             2%, 64% { transform: translate(2px,0) skew(0deg); }
@@ -84,49 +72,52 @@
             62% { transform: translate(0,0) skew(5deg); }
         }
 
-        /* --- UI ELEMENTS --- */
-        .input-group { border-bottom: 2px solid #333; margin-bottom: 20px; display: flex; }
+        /* --- UI ELEMENTS (Original Angular Style) --- */
+        .input-group { border-bottom: 2px solid var(--surface); margin-bottom: 20px; display: flex; }
         input {
             background: transparent; border: none; color: var(--primary);
             padding: 15px; font-size: 1.2rem; flex: 1; font-family: var(--font);
             text-transform: uppercase;
         }
         input:focus { outline: none; }
-        
+        input::placeholder { color: #333; }
+
         .btn {
-            background: rgba(0, 255, 0, 0.1); color: var(--primary);
+            background: var(--surface); color: var(--primary);
             border: 1px solid var(--primary); padding: 18px 30px;
             font-size: 1rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
             cursor: pointer; width: 100%; margin-top: 15px; position: relative;
             transition: 0.2s; 
+            /* THE ORIGINAL CLIPPED CORNERS */
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
         }
-        .btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 15px var(--primary); }
+        .btn:hover { background: var(--primary); color: var(--bg); box-shadow: 0 0 15px var(--primary); }
         .btn:active { transform: scale(0.98); }
         
-        .btn-secondary { border-color: #666; color: #ccc; background: rgba(255,255,255,0.05); }
-        .btn-secondary:hover { background: #fff; color: #000; }
+        .btn-secondary { border-color: var(--text); color: var(--text); }
+        .btn-secondary:hover { background: var(--text); color: var(--bg); box-shadow: 0 0 15px var(--text); }
         
-        .btn-danger { border-color: var(--secondary); color: var(--secondary); background: rgba(255, 0, 255, 0.1); }
+        .btn-danger { border-color: var(--secondary); color: var(--secondary); }
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
-        /* --- GRID & CHIPS --- */
+        /* --- GAME COMPONENTS --- */
         .grid-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 20px 0; }
         .name-chip { 
-            background: #000; padding: 8px 16px; border: 1px solid #444; 
+            background: #111; padding: 8px 16px; border: 1px solid #333; 
             color: #888; font-size: 0.8rem; cursor: pointer; transition: 0.2s;
         }
         .name-chip:hover { border-color: var(--secondary); color: var(--secondary); text-decoration: line-through; }
 
         .topic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
         .topic-card { 
-            padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.6); 
+            padding: 20px; border: 1px solid #333; background: rgba(0,0,0,0.5); 
             cursor: pointer; transition: 0.3s;
         }
-        .topic-card:hover { border-color: var(--accent); background: rgba(0, 255, 255, 0.1); }
+        .topic-card:hover { border-color: var(--accent); box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.2); }
 
         /* --- SECRET REVEAL BOX --- */
         .secret-box {
-            margin: 30px auto; width: 280px; height: 280px;
+            margin: 40px auto; width: 280px; height: 280px;
             background: #000; border: 2px solid #333;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
@@ -134,15 +125,17 @@
             transition: 0.3s;
         }
         .secret-content { 
-            font-size: 2.2rem; font-weight: bold; text-align: center;
+            font-size: 2.5rem; font-weight: bold; text-align: center;
             filter: blur(40px) brightness(0.5); opacity: 0; transition: all 0.2s;
             color: var(--primary); z-index: 2;
         }
-        /* NEW: Hint Text Style */
+        
+        /* Hint Styling */
         .hint-text {
             font-size: 1rem; color: #fff; background: var(--secondary); 
-            padding: 4px 12px; border-radius: 4px; margin-top: 10px;
-            opacity: 0; transition: all 0.2s; transform: translateY(10px);
+            padding: 4px 12px; margin-top: 15px; border-radius: 2px;
+            opacity: 0; transition: all 0.2s; transform: translateY(10px); z-index: 2;
+            text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
         }
 
         .fingerprint-icon {
@@ -164,7 +157,7 @@
         /* --- MODAL --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 200;
+            background: rgba(0,0,0,0.95); z-index: 200;
             display: none; align-items: center; justify-content: center;
             backdrop-filter: blur(5px);
         }
@@ -178,10 +171,20 @@
             border-radius: 8px; cursor: pointer; transition: 0.2s;
             opacity: 0.8;
         }
+        .vote-card:hover { transform: scale(1.05); opacity: 1; border-color: white; }
         .vote-card.selected { 
             border-color: var(--secondary); background: rgba(255, 0, 85, 0.2); 
             box-shadow: 0 0 20px var(--secondary); opacity: 1; animation: pulse-red 2s infinite;
         }
+        .vote-card.selected::after {
+            content: "ELIMINATE"; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--secondary); color: white; font-size: 0.7rem; padding: 2px 6px; font-weight: bold;
+        }
+
+        /* --- RESULTS --- */
+        .result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
+        .win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
+        .win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
 
         /* --- TOGGLE --- */
         .toggle-wrapper { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; opacity: 0.7; }
@@ -195,20 +198,19 @@
 </head>
 <body>
 
-    <!-- LAYER 0: MATRIX -->
+    <!-- BACKGROUND LAYERS -->
     <canvas id="matrixCanvas"></canvas>
-    
-    <!-- LAYER 1: SCANLINES -->
     <div class="scanlines"></div>
 
-    <!-- LAYER 2: APP CONTENT -->
+    <!-- MAIN APP -->
     <div id="app" class="container">
+        <!-- Default Content -->
         <h1 id="loading-text" style="color:white; margin-top:30%;">INITIALIZING...</h1>
-        <p>Loading Game System</p>
-        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload()" style="margin-top:20px;">SYSTEM RESET</button>
+        <p>System Boot Sequence</p>
+        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload()" style="margin-top:20px;">FORCE RESET</button>
     </div>
 
-    <!-- MODAL -->
+    <!-- QR MODAL -->
     <div id="qrModal" class="modal-overlay" onclick="closeModal()">
         <div class="qr-container" onclick="event.stopPropagation()">
             <h2 style="color:#000; text-shadow:none;">SCAN TARGET</h2>
@@ -217,135 +219,66 @@
         </div>
     </div>
 
-    <div id="debug-console" style="display:none; position:fixed; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.8); color:red; padding:10px; font-size:10px; z-index:999;"></div>
-
     <script>
         // --- MATRIX RAIN EFFECT ---
         const initMatrix = () => {
             const canvas = document.getElementById('matrixCanvas');
             const ctx = canvas.getContext('2d');
-            
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
-            const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const nums = '0123456789';
-            const alphabet = katakana + latin + nums;
-            
-            const fontSize = 16;
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテト';
+            const fontSize = 14;
             const columns = canvas.width / fontSize;
             const drops = [];
-
             for(let x = 0; x < columns; x++) drops[x] = 1;
 
             const draw = () => {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
                 ctx.fillStyle = '#0F0';
                 ctx.font = fontSize + 'px monospace';
-                
                 for(let i = 0; i < drops.length; i++) {
-                    const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                    const text = chars.charAt(Math.floor(Math.random() * chars.length));
                     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                    
-                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975)
-                        drops[i] = 0;
-                    
+                    if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                     drops[i]++;
                 }
             };
             setInterval(draw, 33);
-            
-            window.addEventListener('resize', () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
+            window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         };
 
-        // --- ENHANCED DATA WITH HINTS ---
-        // Each word now has a 'h' (Hint) property to help the Imposter
+        // --- GAME DATA WITH HINTS ---
         const GAME_DATA = {
             "Food": [
-                { w: "Pizza", h: "Cheesy / Round" },
-                { w: "Sushi", h: "Rice / Fish" },
-                { w: "Tacos", h: "Shell / Mexican" },
-                { w: "Burger", h: "Bun / Beef" },
-                { w: "Pasta", h: "Italian / Noodle" },
-                { w: "Ice Cream", h: "Cold / Sweet" },
-                { w: "Steak", h: "Meat / Grill" },
-                { w: "Salad", h: "Green / Leafy" },
-                { w: "Soup", h: "Liquid / Spoon" },
-                { w: "Curry", h: "Spicy / Sauce" }
+                { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
+                { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
+                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" }
             ],
             "Animals": [
-                { w: "Lion", h: "King / Roar" },
-                { w: "Penguin", h: "Ice / Bird" },
-                { w: "Shark", h: "Ocean / Teeth" },
-                { w: "Eagle", h: "Fly / USA" },
-                { w: "Elephant", h: "Trunk / Grey" },
-                { w: "Giraffe", h: "Tall / Neck" },
-                { w: "Panda", h: "Bamboo / B&W" },
-                { w: "Snake", h: "Slither / Long" },
-                { w: "Spider", h: "8 Legs / Web" },
-                { w: "Frog", h: "Jump / Green" }
+                { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
+                { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
+                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" }
             ],
             "Jobs": [
-                { w: "Doctor", h: "Hospital / Heal" },
-                { w: "Teacher", h: "School / Learn" },
-                { w: "Pilot", h: "Plane / Fly" },
-                { w: "Chef", h: "Kitchen / Cook" },
-                { w: "Firefighter", h: "Fire / Hose" },
-                { w: "Artist", h: "Paint / Draw" },
-                { w: "Clown", h: "Funny / Circus" },
-                { w: "Spy", h: "Secret / Bond" },
-                { w: "Coder", h: "Computer / Type" },
-                { w: "Lawyer", h: "Court / Suit" }
+                { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
+                { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
+                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" }
             ],
             "Places": [
-                { w: "School", h: "Study / Class" },
-                { w: "Hospital", h: "Doctors / Sick" },
-                { w: "Beach", h: "Sand / Ocean" },
-                { w: "Space Station", h: "Orbit / Stars" },
-                { w: "Prison", h: "Jail / Bars" },
-                { w: "Library", h: "Quiet / Books" },
-                { w: "Casino", h: "Gambling / Chips" },
-                { w: "Zoo", h: "Animals / Cages" },
-                { w: "Mars", h: "Red Planet" },
-                { w: "Gym", h: "Workout / Sweat" }
+                { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
+                { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
+                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" }
             ],
             "Household": [
-                { w: "Chair", h: "Sit / Legs" },
-                { w: "Toaster", h: "Bread / Hot" },
-                { w: "Phone", h: "Call / Screen" },
-                { w: "Shoe", h: "Foot / Walk" },
-                { w: "Umbrella", h: "Rain / Dry" },
-                { w: "Mirror", h: "Reflect / Glass" },
-                { w: "Fork", h: "Eat / Prongs" },
-                { w: "Laptop", h: "Computer / Fold" },
-                { w: "Bed", h: "Sleep / Soft" },
-                { w: "Lamp", h: "Light / Switch" }
+                { w: "Chair", h: "Sit / Legs" }, { w: "Toaster", h: "Bread / Hot" }, { w: "Phone", h: "Call / Screen" },
+                { w: "Shoe", h: "Foot / Walk" }, { w: "Umbrella", h: "Rain / Dry" }, { w: "Mirror", h: "Reflect / Glass" },
+                { w: "Fork", h: "Eat / Prongs" }, { w: "Laptop", h: "Computer / Fold" }, { w: "Bed", h: "Sleep / Soft" }, { w: "Lamp", h: "Light / Switch" }
             ]
         };
 
-        // --- STATE & UTILS ---
-        let state = {
-            step: 'LOBBY', 
-            players: [],
-            passMode: false,
-            passIndex: 0,
-            topic: null,
-            secretWord: null,
-            secretHint: null, // NEW: Current secret's hint
-            imposterIndex: null,
-            startTime: null,
-            votedIndex: null
-        };
-
-        const params = new URLSearchParams(window.location.search);
-        const app = document.getElementById('app');
-
+        // --- AUDIO SYSTEM ---
         const SFX_URLS = {
             click: 'https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3',
             scan: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3',
@@ -368,10 +301,18 @@
         function pulse(ms = 20) { if (navigator.vibrate) navigator.vibrate(ms); }
         async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
 
-        // --- LOGIC ---
+        // --- STATE & CORE ---
+        let state = {
+            step: 'LOBBY', players: [], passMode: false, passIndex: 0,
+            topic: null, secretWord: null, secretHint: null, imposterIndex: null,
+            startTime: null, votedIndex: null, customWords: []
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const app = document.getElementById('app');
+
         function init() {
-            initMatrix(); // Start the rain
-            
+            initMatrix();
             try {
                 if (params.has('data')) {
                     renderPlayerScreen();
@@ -381,15 +322,14 @@
                     let saved = null;
                     try { saved = localStorage.getItem('imposterState'); } catch(e) {}
                     if (saved) state = { ...state, ...JSON.parse(saved) };
-                    
-                    if(state.step !== 'LOBBY') renderHostScreen();
-                    else renderLobby();
+                    if(state.step !== 'LOBBY') renderHostScreen(); else renderLobby();
                 }
             } catch(err) {
-                app.innerHTML = `<h1>CRASH</h1><p>Resetting...</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>`;
+                app.innerHTML = `<h1>ERROR</h1><p>Resetting...</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>`;
             }
         }
 
+        // --- HOST LOGIC ---
         function addPlayer() {
             const input = document.getElementById('nameInput');
             const name = input.value.trim().toUpperCase();
@@ -410,20 +350,15 @@
         function startGame(topicKey) {
             if (state.players.length < 3) return alert("Need 3+ players!");
             playSfx('scan');
-
             state.topic = topicKey;
 
             if (topicKey === 'CUSTOM') {
                 const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
                 if (!input) return;
-                const words = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
-                if (words.length < 2) return alert("Need 2+ words!");
-                
-                // For custom words, we don't have hints, so we generate a fallback
-                const chosenWord = words[Math.floor(Math.random() * words.length)];
-                state.secretWord = chosenWord;
-                state.secretHint = "Custom Word (Good Luck!)";
-                
+                state.customWords = input.split(',').map(w => w.trim()).filter(w => w.length > 0);
+                if (state.customWords.length < 2) return alert("Need 2+ words!");
+                state.secretWord = state.customWords[Math.floor(Math.random() * state.customWords.length)];
+                state.secretHint = "Custom Word";
             } else {
                 const dataList = GAME_DATA[topicKey];
                 const item = dataList[Math.floor(Math.random() * dataList.length)];
@@ -436,7 +371,6 @@
             state.votedIndex = null;
             state.step = state.passMode ? 'PASS_PREP' : 'QR_PREP';
             state.passIndex = 0;
-            
             saveState();
             renderHostScreen();
         }
@@ -473,7 +407,7 @@
         function renderLobby() {
             app.innerHTML = `
                 <h1>THE IMPOSTER</h1>
-                <p>MATRIX EDITION</p>
+                <p>CYBERPUNK EDITION</p>
                 <div class="input-group">
                     <input type="text" id="nameInput" placeholder="ADD AGENT NAME" autocomplete="off" onkeydown="if(event.key==='Enter') addPlayer()">
                     <button onclick="addPlayer()" style="background:none; border:none; color:var(--primary); font-size:1.5rem;">+</button>
@@ -546,14 +480,17 @@
         function renderResults() {
             const imposterCaught = (state.votedIndex === state.imposterIndex);
             const imposterName = state.players[state.imposterIndex];
+            const resultTitle = imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS";
+            const bannerClass = imposterCaught ? "win-citizen" : "win-imposter";
+            
             app.innerHTML = `
-                <div style="padding:30px; margin:20px 0; border:2px solid; text-transform:uppercase; ${imposterCaught ? 'border-color:var(--primary); background:rgba(0,255,0,0.1);' : 'border-color:var(--secondary); background:rgba(255,0,85,0.1);'}">
-                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${imposterCaught ? "CITIZENS WIN" : "IMPOSTER WINS"}</h1>
+                <div class="result-banner ${bannerClass}">
+                    <h1 style="font-size:2.5rem; text-shadow:none; color:inherit;">${resultTitle}</h1>
                     <p style="color:inherit; margin:0;">${imposterCaught ? "Glitch Neutralized" : "System Compromised"}</p>
                 </div>
                 <div style="display:flex; gap:10px; text-align:left;">
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
-                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>SECRET WORD</small><br><strong style="color:var(--primary); font-size:1.5rem;">${state.secretWord}</strong></div>
+                    <div style="flex:1; background:#111; padding:15px; border:1px solid #333;"><small>REAL IMPOSTER</small><br><strong style="color:var(--secondary); font-size:1.5rem;">${imposterName}</strong></div>
                 </div>
                 <button class="btn" onclick="resetGame()">NEW MISSION</button>
             `;
@@ -582,14 +519,11 @@
             }
         }
 
-        // --- DISPLAYING THE IDENTITY (WITH HINTS) ---
         function renderPlayerIdentity(name, role, word, hint, topic) {
             const isImposter = (role === 'IMPOSTER');
-            
-            // Imposter sees hint. Citizen sees word.
             const displayWord = isImposter ? "YOU ARE THE<br>IMPOSTER" : word;
             const displayHint = isImposter ? ("HINT: " + hint) : "Citizen";
-            const colorStyle = isImposter ? 'color:var(--secondary)' : 'color:var(--primary)';
+            const color = isImposter ? 'color:var(--secondary)' : 'color:var(--primary)';
 
             app.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:20px;">
@@ -597,8 +531,7 @@
                 </div>
                 <div class="secret-box" id="mobileBox">
                     <div class="fingerprint-icon">☝️</div>
-                    <div class="secret-content" style="${colorStyle}">${displayWord}</div>
-                    <!-- HINT APPEARS HERE FOR IMPOSTER -->
+                    <div class="secret-content" style="${color}">${displayWord}</div>
                     ${isImposter ? `<div class="hint-text">${displayHint}</div>` : ''}
                 </div>
                 <p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>
