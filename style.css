@@ -1,0 +1,97 @@
+:root {
+    --bg: #050505;
+    --surface: #1a1a1a;
+    --primary: #00ff9d; /* Neon Green */
+    --secondary: #ff0055; /* Neon Red */
+    --accent: #00d2ff; /* Cyan */
+    --text: #ffffff;
+    --font: 'Space Grotesk', sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    margin: 0; padding: 20px;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* CRT EFFECTS */
+.scanlines {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none; z-index: 99;
+}
+
+.container {
+    width: 100%; max-width: 800px;
+    text-align: center;
+    z-index: 10;
+}
+
+/* TYPOGRAPHY */
+h1 { font-size: 3rem; margin: 0; text-transform: uppercase; letter-spacing: 4px; color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+h2 { font-size: 1.5rem; color: var(--text); opacity: 0.8; }
+.highlight { color: var(--primary); font-weight: bold; }
+.danger { color: var(--secondary); font-weight: bold; }
+
+/* INPUTS & BUTTONS */
+input {
+    background: transparent; border: 2px solid var(--surface);
+    color: var(--text); padding: 15px; font-size: 1.2rem;
+    border-radius: 8px; width: 100%; margin-bottom: 10px;
+    font-family: var(--font); text-align: center;
+}
+input:focus { outline: none; border-color: var(--primary); }
+
+.btn {
+    background: var(--primary); color: var(--bg);
+    border: none; padding: 15px 30px; font-size: 1.2rem;
+    font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
+    cursor: pointer; width: 100%; border-radius: 4px;
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin-top: 10px;
+}
+.btn:hover { box-shadow: 0 0 20px var(--primary); transform: translateY(-2px); }
+.btn:active { transform: scale(0.98); }
+
+.btn-outline { background: transparent; border: 2px solid var(--surface); color: var(--text); }
+.btn-outline:hover { border-color: var(--text); box-shadow: none; }
+
+.btn-danger { background: var(--secondary); color: white; }
+.btn-danger:hover { box-shadow: 0 0 20px var(--secondary); }
+
+/* GRID LAYOUTS */
+.grid-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0; }
+.name-chip { background: var(--surface); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--surface); }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
+.card { background: var(--surface); padding: 20px; border-radius: 12px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+.card:hover { border-color: var(--primary); transform: translateY(-5px); }
+
+/* SECRET REVEAL */
+.secret-box {
+    margin: 40px auto; width: 250px; height: 250px;
+    background: var(--surface); border: 2px dashed var(--text);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 20px; position: relative; overflow: hidden;
+    user-select: none;
+}
+.secret-content { font-size: 2rem; font-weight: bold; filter: blur(20px); transition: filter 0.3s; }
+.secret-box:active .secret-content { filter: blur(0); }
+.tap-hint { position: absolute; bottom: 10px; font-size: 0.8rem; opacity: 0.5; }
+
+/* MODAL */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal-content { background: var(--bg); padding: 30px; border: 2px solid var(--primary); max-width: 500px; width: 90%; border-radius: 10px; }
+.qr-box { background: white; padding: 10px; display: inline-block; margin: 20px 0; border-radius: 10px; }
