@@ -5,11 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>THE IMPOSTER: Cyberpunk Edition</title>
     
+    <!-- ERROR HANDLER: Prints errors to screen so you aren't stuck on black -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            const div = document.getElementById('debug-console');
+            if(div) {
+                div.style.display = 'block';
+                div.innerHTML += `<div>❌ <b>Error:</b> ${msg} <br><small>${url}:${line}</small></div>`;
+            }
+            // Also update the main loading text
+            const loader = document.getElementById('loading-text');
+            if(loader) loader.innerHTML = "SYSTEM FAILURE";
+            return false;
+        };
+    </script>
+
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     
-    <!-- LIBRARIES -->
+    <!-- LIBRARIES (With fallback checks) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -33,12 +48,11 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: var(--font);
-            display: flex; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             min-height: 100vh; overflow-x: hidden;
-            /* REMOVED BROKEN ANIMATION HERE */
         }
 
-        /* --- ANIMATIONS (Text Glitch Only) --- */
+        /* --- ANIMATIONS --- */
         @keyframes glitch {
             2%, 64% { transform: translate(2px,0) skew(0deg); }
             4%, 60% { transform: translate(-2px,0) skew(0deg); }
@@ -54,7 +68,6 @@
         /* --- CRT SCANLINES --- */
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* Fixed Gradient Syntax */
             background: linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%);
             background-size: 100% 4px; 
             pointer-events: none; z-index: 99; opacity: 0.6;
@@ -183,6 +196,15 @@
         .result-banner { padding: 30px; margin: 20px 0; border: 2px solid; text-transform: uppercase; letter-spacing: 2px; }
         .win-citizen { border-color: var(--primary); background: rgba(0, 255, 0, 0.1); color: var(--primary); }
         .win-imposter { border-color: var(--secondary); background: rgba(255, 0, 85, 0.1); color: var(--secondary); }
+
+        /* Debug Console */
+        #debug-console {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(50,0,0,0.9); color: #ffcccc;
+            font-family: monospace; font-size: 12px;
+            padding: 10px; z-index: 9999; display: none;
+            text-align: left; max-height: 150px; overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -191,8 +213,9 @@
 
     <div id="app" class="container">
         <!-- Default Content in case JS fails -->
-        <h1 style="color:white; margin-top:30%;">INITIALIZING...</h1>
+        <h1 id="loading-text" style="color:white; margin-top:30%;">INITIALIZING...</h1>
         <p style="font-size:0.8rem;">System Boot Sequence</p>
+        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload()" style="margin-top:20px;">FORCE RESET</button>
     </div>
 
     <!-- QR MODAL -->
@@ -204,18 +227,29 @@
         </div>
     </div>
 
+    <div id="debug-console"></div>
+
     <script>
-        // --- AUDIO SYSTEM ---
-        const SFX = {
-            click: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3'),
-            scan: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3'),
-            reveal: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-click-900.mp3'),
-            alarm: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3'),
-            win: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
-            lose: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3')
+        // --- SAFE AUDIO SYSTEM ---
+        const SFX_URLS = {
+            click: 'https://assets.mixkit.co/sfx/preview/mixkit-modern-technology-select-3124.mp3',
+            scan: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-interface-robot-click-901.mp3',
+            reveal: 'https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-click-900.mp3',
+            alarm: 'https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3',
+            win: 'https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3',
+            lose: 'https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3'
         };
 
-        function playSfx(key) { try { const s = SFX[key].cloneNode(); s.volume = 0.5; s.play().catch(()=>{}); } catch(e){} }
+        function playSfx(key) { 
+            try { 
+                if(SFX_URLS[key]) {
+                    const s = new Audio(SFX_URLS[key]);
+                    s.volume = 0.5; 
+                    s.play().catch(e => console.log("Audio blocked:", e)); 
+                }
+            } catch(e) { console.log("SFX Error", e); } 
+        }
+
         function pulse(ms = 20) { if (navigator.vibrate) navigator.vibrate(ms); }
         async function requestWakeLock() { if ('wakeLock' in navigator) { try { await navigator.wakeLock.request('screen'); } catch (err) {} } }
 
@@ -247,24 +281,28 @@
         const isRoomMode = params.has('room');   
         const app = document.getElementById('app');
 
-        // --- INIT ---
-        try {
-            if (isPlayerMode) {
-                renderPlayerScreen();
-            } else if (isRoomMode) {
-                renderRoomSelection();
-            } else {
-                // Safe LocalStorage
-                let saved = null;
-                try { saved = localStorage.getItem('imposterState'); } catch(e) { console.log('Storage Disabled'); }
-                
-                if (saved) state = { ...state, ...JSON.parse(saved) };
-                if(state.step !== 'LOBBY') renderHostScreen();
-                else renderLobby();
+        // --- CORE FUNCTIONS ---
+
+        function init() {
+            try {
+                if (isPlayerMode) {
+                    renderPlayerScreen();
+                } else if (isRoomMode) {
+                    renderRoomSelection();
+                } else {
+                    // Safe LocalStorage Loading
+                    let saved = null;
+                    try { saved = localStorage.getItem('imposterState'); } catch(e) { console.warn('LocalStorage blocked'); }
+                    
+                    if (saved) state = { ...state, ...JSON.parse(saved) };
+                    
+                    if(state.step !== 'LOBBY') renderHostScreen();
+                    else renderLobby();
+                }
+            } catch(err) {
+                console.error("Critical Init Error:", err);
+                app.innerHTML = `<h1>CRASH</h1><p>${err.message}</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>`;
             }
-        } catch(err) {
-            console.error(err);
-            app.innerHTML = "<h1>SYSTEM ERROR</h1><p>Resetting...</p><button class='btn' onclick='localStorage.clear(); location.reload()'>RESET</button>";
         }
 
         // --- HOST LOGIC ---
@@ -354,7 +392,7 @@
             
             const imposterCaught = (state.votedIndex === state.imposterIndex);
             if(imposterCaught) {
-                 setTimeout(() => { playSfx('win'); confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }, 500);
+                 setTimeout(() => { playSfx('win'); try{ confetti({ particleCount: 200, colors: ['#0f0', '#fff'] }); }catch(e){} }, 500);
             } else {
                  setTimeout(() => { playSfx('lose'); }, 500);
             }
@@ -385,6 +423,7 @@
                 case 'GAME': renderGame(); break;
                 case 'VOTING': renderVoting(); break; 
                 case 'RESULTS': renderResults(); break; 
+                default: renderLobby();
             }
         }
 
@@ -444,7 +483,7 @@
                 const diff = Math.floor((Date.now() - state.startTime) / 1000);
                 const m = Math.floor(diff / 60);
                 const s = (diff % 60).toString().padStart(2, '0');
-                timerEl.innerText = `${m}:${s}`;
+                if(timerEl) timerEl.innerText = `${m}:${s}`;
                 requestAnimationFrame(update);
             };
             update();
@@ -616,7 +655,12 @@
             target.innerHTML = '';
             title.innerText = titleText;
             
-            new QRCode(target, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
+            // Fallback for QRCode library
+            if(typeof QRCode !== 'undefined') {
+                new QRCode(target, { text: url, width: 250, height: 250, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
+            } else {
+                target.innerHTML = `<p>QR Library Missing.</p><a href="${url}" style="color:black">Click Link Instead</a>`;
+            }
             modal.classList.add('active');
         }
 
@@ -640,6 +684,10 @@
             state.passIndex++;
             if (state.passIndex >= state.players.length) startRound(); else { playSfx('click'); renderHostScreen(); }
         }
+
+        // --- STARTUP ---
+        init();
+
     </script>
 </body>
 </html>
