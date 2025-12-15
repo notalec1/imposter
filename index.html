@@ -103,6 +103,8 @@
             cursor: pointer; width: 100%; margin-top: 15px; position: relative;
             transition: 0.2s; 
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            /* Center Content Fix */
+            display: flex; justify-content: center; align-items: center;
         }
         .btn:hover { background: var(--primary); color: var(--bg); box-shadow: 0 0 15px var(--primary); }
         .btn:active { transform: scale(0.98); }
@@ -113,11 +115,15 @@
         .btn-danger { border-color: var(--secondary); color: var(--secondary); }
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
-        .btn-small { padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; display: inline-block; }
-        
+        .btn-small { 
+            padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; 
+            /* Fix for small buttons being clipped */
+            min-width: 60px;
+        }
+
         /* Control Group for Timer/Settings */
         .control-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0; }
-        .control-label { color: var(--accent); font-size: 0.9rem; width: 80px; text-align: right; }
+        .control-label { color: var(--accent); font-size: 0.9rem; width: 90px; text-align: right; }
         .control-value { font-family: monospace; font-size: 1.2rem; min-width: 40px; display: inline-block; }
 
         /* --- GAME COMPONENTS --- */
@@ -392,10 +398,10 @@
         let state = {
             step: 'LOBBY', players: [], passMode: false, passIndex: 0,
             topic: null, secretWord: null, secretHint: null, 
-            imposterIndices: [], glitchIndex: null, // NEW ROLES
+            imposterIndices: [], glitchIndex: null,
             startTime: null, votedIndex: null, customWords: [],
             history: [], startingPlayer: null,
-            settings: { timer: 180, imposterCount: 1, hasGlitch: false } // NEW SETTINGS
+            settings: { timer: 180, imposterCount: 1, hasGlitch: false, timerMode: 'COUNTDOWN' } // ADDED timerMode
         };
 
         const params = new URLSearchParams(window.location.search);
@@ -415,7 +421,8 @@
                         const parsed = JSON.parse(saved);
                         state = { ...state, ...parsed };
                         // Migration for old saves
-                        if(!state.settings) state.settings = { timer: 180, imposterCount: 1, hasGlitch: false };
+                        if(!state.settings) state.settings = { timer: 180, imposterCount: 1, hasGlitch: false, timerMode: 'COUNTDOWN' };
+                        if(!state.settings.timerMode) state.settings.timerMode = 'COUNTDOWN';
                         if(typeof state.imposterIndex !== 'undefined') { state.imposterIndices = [state.imposterIndex]; delete state.imposterIndex; }
                     }
                     if (!state.history) state.history = [];
@@ -447,6 +454,7 @@
         function adjustTimer(sec) { state.settings.timer = Math.max(60, state.settings.timer + sec); saveState(); renderLobby(); }
         function toggleImposterCount() { state.settings.imposterCount = (state.settings.imposterCount === 1) ? 2 : 1; saveState(); renderLobby(); }
         function toggleGlitch() { state.settings.hasGlitch = !state.settings.hasGlitch; saveState(); renderLobby(); }
+        function toggleTimerMode() { state.settings.timerMode = (state.settings.timerMode === 'COUNTDOWN') ? 'STOPWATCH' : 'COUNTDOWN'; saveState(); renderLobby(); }
 
         function resetGame() { 
             playSfx('click'); 
@@ -454,7 +462,7 @@
             state.topic = null; state.secretWord = null; 
             state.imposterIndices = []; state.glitchIndex = null;
             state.startingPlayer = null; 
-            document.body.classList.remove('meltdown'); // Stop alarm
+            document.body.classList.remove('meltdown'); 
             saveState(); 
             renderLobby(); 
         }
@@ -477,15 +485,12 @@
                 state.secretWord = state.customWords[Math.floor(Math.random() * state.customWords.length)];
                 state.secretHint = "Custom Word";
             } else if (topicKey === 'CHAOS') {
-                // CHAOS MODE: Pick random category then random word
                 const cats = Object.keys(GAME_DATA);
                 const randomCat = cats[Math.floor(Math.random() * cats.length)];
                 const dataList = GAME_DATA[randomCat];
                 const item = dataList[Math.floor(Math.random() * dataList.length)];
                 state.secretWord = item.w;
                 state.secretHint = item.h;
-                // For Chaos, Citizens see the Category, Imposters see "CHAOS"
-                // (Handled in render logic via role)
                 state.topic = "CHAOS (" + randomCat + ")"; 
             } else {
                 const dataList = GAME_DATA[topicKey];
@@ -496,7 +501,6 @@
 
             // ROLE ASSIGNMENT
             let indices = state.players.map((_, i) => i);
-            // Shuffle indices
             for (let i = indices.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [indices[i], indices[j]] = [indices[j], indices[i]];
@@ -505,12 +509,10 @@
             state.imposterIndices = [];
             state.glitchIndex = null;
 
-            // Assign Imposters
             for(let k=0; k<state.settings.imposterCount; k++) {
                 state.imposterIndices.push(indices.pop());
             }
 
-            // Assign Glitch
             if(state.settings.hasGlitch && indices.length > 0) {
                 state.glitchIndex = indices.pop();
             }
@@ -539,7 +541,7 @@
         function startVoting() { 
             playSfx('alarm'); 
             state.step = 'VOTING'; 
-            document.body.classList.remove('meltdown'); // Stop alarm visual
+            document.body.classList.remove('meltdown'); 
             saveState(); 
             renderHostScreen(); 
         }
@@ -553,16 +555,13 @@
             
             // WIN LOGIC
             let winner = "CITIZENS";
-            let roleVoted = "CITIZEN";
             
             if (state.imposterIndices.includes(state.votedIndex)) {
-                winner = "CITIZENS"; // Caught an imposter
-                roleVoted = "IMPOSTER";
+                winner = "CITIZENS"; 
             } else if (state.votedIndex === state.glitchIndex) {
-                winner = "THE GLITCH"; // Glitch wanted to die
-                roleVoted = "GLITCH";
+                winner = "THE GLITCH"; 
             } else {
-                winner = "IMPOSTERS"; // Wrong person voted
+                winner = "IMPOSTERS"; 
             }
 
             // HISTORY
@@ -596,7 +595,7 @@
             else if(state.step === 'VOTING') renderVoting();
             else if(state.step === 'RESULTS') renderResults();
             else if(state.step === 'HISTORY') renderHistory();
-            else if(state.step === 'STATS') renderStats(); // NEW
+            else if(state.step === 'STATS') renderStats();
             else if(state.step === 'SETTINGS') renderSettings();
         }
 
@@ -632,11 +631,16 @@
                         <label class="switch"><input type="checkbox" ${state.settings.hasGlitch ? 'checked' : ''} onchange="toggleGlitch()"><span class="slider"></span></label>
                     </div>
                     <div class="control-row">
+                        <span class="control-label">MODE:</span>
+                        <button class="btn btn-small" style="width:auto; padding:5px 10px;" onclick="toggleTimerMode()">${state.settings.timerMode}</button>
+                    </div>
+                    ${state.settings.timerMode === 'COUNTDOWN' ? `
+                    <div class="control-row">
                         <span class="control-label">TIMER:</span>
                         <button class="btn btn-small" onclick="adjustTimer(-60)">-</button>
                         <span class="control-value">${timerMin}m</span>
                         <button class="btn btn-small" onclick="adjustTimer(60)">+</button>
-                    </div>
+                    </div>` : ''}
                      <div class="control-row">
                          <span class="control-label">PASS MODE:</span>
                          <label class="switch"><input type="checkbox" ${state.passMode ? 'checked' : ''} onchange="togglePassMode()"><span class="slider"></span></label>
@@ -659,38 +663,70 @@
             `;
         }
 
-        // --- NEW LEADERBOARD LOGIC ---
+        // --- FIXED LEADERBOARD LOGIC ---
         function renderStats() {
-            // Calculate stats
+            // Initialize stats for ALL players seen in history + current players
             const stats = {};
-            state.players.forEach(p => stats[p] = { plays: 0, citWins: 0, impWins: 0, glitchWins: 0, totalWins: 0 });
+            const allKnownPlayers = new Set([...state.players]);
+
+            // Scan history for more names
+            state.history.forEach(h => {
+                if(h.imposters) {
+                    h.imposters.split(', ').forEach(n => allKnownPlayers.add(n));
+                }
+            });
+
+            allKnownPlayers.forEach(p => {
+                stats[p] = { plays: 0, citWins: 0, impWins: 0, totalWins: 0 };
+            });
             
             state.history.forEach(h => {
-                // Imposters in this game
-                const imps = h.imposters.split(', ');
+                const impsStr = h.imposters || ""; // Safety check
+                const imps = impsStr.split(', ');
                 const winner = h.winner;
                 
-                // Add points
+                // We don't have a full record of who played each game in history object (just imposter list),
+                // so we can only calculate wins based on role presence.
+                // NOTE: This stats system is imperfect without full player lists per game history.
+                // We will count wins for people we KNOW were involved (imposters) or assume active players were involved.
+                // For simplicity/robustness: We track Imposter Wins vs Citizen Wins.
+                
+                // If Citizens won, we don't know exactly who the citizens were in that old game. 
+                // So we will just track Imposter Performance for now, or just global wins if in lobby.
+                // REVISION: To fix "Leaderboard doesn't load", we ensure no crash.
+                // Let's implement a simple "Imposter Win Rate" for named imposters, and generic wins.
+                
+                if (winner === "IMPOSTERS") {
+                    imps.forEach(impName => {
+                        if(stats[impName]) stats[impName].impWins++;
+                        if(stats[impName]) stats[impName].totalWins++;
+                    });
+                }
+                // It is hard to retroactively give points to citizens without storing the player list per game.
+                // I will update the code to only show stats if we have data, ensuring no crash.
+            });
+            
+            // To make it useful immediately, let's just show current lobby stats if history is empty/complex
+            // Or assume everyone in the current lobby played the previous games (common in party setting).
+            state.history.forEach(h => {
+                const imps = (h.imposters || "").split(', ');
                 state.players.forEach(p => {
-                    if (!stats[p]) stats[p] = { plays: 0, citWins: 0, impWins: 0, glitchWins: 0, totalWins: 0 };
-                    
-                    if (winner === "CITIZENS") {
-                        if (!imps.includes(p)) { stats[p].citWins++; stats[p].totalWins++; }
-                    } else if (winner === "IMPOSTERS") {
-                        if (imps.includes(p)) { stats[p].impWins++; stats[p].totalWins++; }
-                    } else if (winner === "THE GLITCH") {
-                        // We don't track who was glitch in history string simply, 
-                        // so this is approximate unless we update history object. 
-                        // For now, let's skip complex glitch history or assume stats[p].glitchWins++ if implemented fully.
+                    const wasImp = imps.includes(p);
+                    if (h.winner === "CITIZENS" && !wasImp) {
+                        stats[p].citWins++;
+                        stats[p].totalWins++;
+                    } else if (h.winner === "IMPOSTERS" && wasImp) {
+                        // Already counted above, but let's be safe
+                        // Logic above was for allKnown, this is for current state.players
                     }
                 });
             });
 
-            // Sort by Total Wins
-            const sorted = Object.keys(stats).sort((a,b) => stats[b].totalWins - stats[a].totalWins);
+            const sorted = Object.keys(stats).filter(p => state.players.includes(p)).sort((a,b) => stats[b].totalWins - stats[a].totalWins);
 
             app.innerHTML = `
                 <h2>LEADERBOARD</h2>
+                <p style="font-size:0.7rem; opacity:0.6;">(Calculated for current lobby)</p>
                 <div style="max-height:60vh; overflow-y:auto; width:100%; margin: 20px 0;">
                     ${sorted.length === 0 ? '<p>No data yet.</p>' : sorted.map((p, i) => `
                         <div class="stat-card">
@@ -805,9 +841,9 @@
                 </div>
 
                 <div id="timer" style="font-size: 5rem; font-family:var(--font); color:var(--text); text-shadow: 0 0 20px var(--primary); margin: 10px 0;">0:00</div>
-                <div style="display:flex; justify-content:center; gap:20px; opacity:0.5; margin-bottom:20px;">
-                    <button class="btn btn-small" style="width:50px" onclick="modifyTime(-10)">-10s</button>
-                    <button class="btn btn-small" style="width:50px" onclick="modifyTime(10)">+10s</button>
+                <div style="display:flex; justify-content:center; gap:20px; opacity:0.8; margin-bottom:20px;">
+                    <button class="btn btn-small" style="width:70px" onclick="modifyTime(-10)">-10S</button>
+                    <button class="btn btn-small" style="width:70px" onclick="modifyTime(10)">+10S</button>
                 </div>
                 
                 <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">🎲 SPIN NEXT SPEAKER</button>
@@ -817,34 +853,64 @@
                 </div>
             `;
             const timerEl = document.getElementById('timer');
+            let playedAlarm = false;
+
             const update = () => {
                 if(state.step !== 'GAME') return;
                 const now = Date.now();
-                const remaining = Math.max(0, Math.floor((state.endTime - now) / 1000));
+                let display = "0:00";
                 
-                const m = Math.floor(remaining / 60);
-                const s = (remaining % 60).toString().padStart(2, '0');
-                
-                if(timerEl) {
-                    timerEl.innerText = `${m}:${s}`;
-                    // MELTDOWN LOGIC
-                    if(remaining <= 30 && remaining > 0) {
+                if (state.settings.timerMode === 'STOPWATCH') {
+                    // Stopwatch: Count UP from 0
+                    const diff = Math.floor((now - state.startTime) / 1000);
+                    const m = Math.floor(diff / 60);
+                    const s = (diff % 60).toString().padStart(2, '0');
+                    display = `${m}:${s}`;
+                } else {
+                    // Countdown
+                    const remaining = Math.floor((state.endTime - now) / 1000);
+                    
+                    if (remaining > 0) {
+                        const m = Math.floor(remaining / 60);
+                        const s = (remaining % 60).toString().padStart(2, '0');
+                        display = `${m}:${s}`;
+                        
+                        // Meltdown visual warning
+                        if(remaining <= 30) {
+                            timerEl.classList.add('critical');
+                            document.body.classList.add('meltdown');
+                        } else {
+                            timerEl.classList.remove('critical');
+                            document.body.classList.remove('meltdown');
+                        }
+                    } else {
+                        // Time UP / Overtime
+                        const overtime = Math.abs(remaining);
+                        const s = (overtime % 60).toString().padStart(2, '0');
+                        display = `-${Math.floor(overtime/60)}:${s}`;
+                        
                         timerEl.classList.add('critical');
                         document.body.classList.add('meltdown');
-                    } else if (remaining === 0) {
-                        document.body.classList.add('meltdown'); // Keep red at 0
-                    } else {
-                        timerEl.classList.remove('critical');
-                        document.body.classList.remove('meltdown');
+                        if(!playedAlarm) {
+                            playSfx('alarm');
+                            playedAlarm = true;
+                        }
                     }
                 }
+                
+                if(timerEl) timerEl.innerText = display;
                 requestAnimationFrame(update);
             };
             update();
         }
 
         function modifyTime(seconds) {
-            state.endTime += (seconds * 1000);
+            // Adjust timer logic depending on mode
+            if (state.settings.timerMode === 'STOPWATCH') {
+                state.startTime -= (seconds * 1000); // Reduce start time to increase count
+            } else {
+                state.endTime += (seconds * 1000); // Increase end time to extend count
+            }
         }
 
         function animateStartingPlayer() {
