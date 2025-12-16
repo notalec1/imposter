@@ -87,13 +87,20 @@
             display: flex; justify-content: space-between; align-items: center;
             color: var(--accent); font-weight: bold; letter-spacing: 2px;
         }
+        .ai-battery { font-size: 0.8rem; color: var(--primary); font-family: monospace; }
+        
         #ai-messages {
             flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;
             font-family: monospace; font-size: 0.9rem;
         }
         .msg { padding: 8px 12px; border-radius: 4px; max-width: 80%; word-wrap: break-word; }
         .msg.user { align-self: flex-end; background: #222; border: 1px solid #444; color: #fff; }
-        .msg.ai { align-self: flex-start; background: rgba(0,255,255,0.1); border: 1px solid var(--accent); color: var(--accent); }
+        .msg.ai { align-self: flex-start; background: rgba(0,255,255,0.1); border: 1px solid var(--accent); color: var(--accent); position: relative; }
+        
+        /* Cursor for typewriter effect */
+        .msg.ai.typing::after { content: '█'; animation: blink 1s infinite; margin-left: 2px; font-size: 0.8rem; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
         .ai-input-area {
             display: flex; border-top: 1px solid #333;
         }
@@ -104,6 +111,7 @@
             background: var(--surface); border: none; border-left: 1px solid #333;
             color: var(--accent); padding: 0 20px; cursor: pointer; font-weight: bold;
         }
+        #ai-send:disabled { color: #555; cursor: not-allowed; }
 
         /* MELTDOWN EFFECT */
         body.meltdown { animation: red-alert 1s infinite alternate; }
@@ -215,7 +223,8 @@
         <div id="ai-chat-box">
             <div class="ai-header">
                 <span>// TACTICAL.AI</span>
-                <span onclick="toggleAIChat()" style="cursor:pointer; color:red;">[X]</span>
+                <span class="ai-battery" id="ai-battery-display">BATTERY: |||</span>
+                <span onclick="toggleAIChat()" style="cursor:pointer; color:red; margin-left:10px;">[X]</span>
             </div>
             <div id="ai-messages">
                 <div class="msg ai">System Online. How may I assist your mission?</div>
@@ -245,6 +254,9 @@
     </div>
 
     <script>
+        // --- TWEAKABLE AI SETTINGS ---
+        const AI_MAX_CHARGES = 3; // Change this number to limit questions per session
+
         // --- PRESET NAMES ---
         const PRESET_NAMES = [
             "ALEC", "ALAIN", "NADA", "HODA", "FADI", "NOA", "GIO", "NEO", 
@@ -392,8 +404,9 @@
             localStorage.setItem('imposterTheme', currentThemeIndex);
         }
 
-        // --- AI LOGIC (FIXED FOR GOOGLE) ---
+        // --- AI LOGIC (FIXED) ---
         let aiParams = { role: null, word: null, topic: null };
+        let aiChargesLeft = AI_MAX_CHARGES;
 
         function toggleAIChat() {
             const el = document.getElementById('ai-modal-overlay');
@@ -407,7 +420,11 @@
         }
 
         function updateAIContext() {
-            // Determine context based on if we are Host or Player
+            // Reset charges if we detect a new game step, or maintain them
+            // For this implementation, we reset charges when entering Lobby to give fresh charges per "session" or just visually update
+            if(state.step === 'LOBBY') aiChargesLeft = AI_MAX_CHARGES; 
+            
+            // Determine context
             if (params.has('data')) {
                 // Player View
                 try {
@@ -420,9 +437,44 @@
             } else {
                 aiParams = { role: "LOBBY", word: null, topic: null };
             }
+            updateBatteryUI();
+        }
+
+        function updateBatteryUI() {
+            const bars = "|||".substring(0, Math.min(3, aiChargesLeft));
+            const txt = `BATTERY: ${bars} (${aiChargesLeft})`;
+            const el = document.getElementById('ai-battery-display');
+            if(el) {
+                el.innerText = txt;
+                el.style.color = aiChargesLeft > 0 ? 'var(--primary)' : 'var(--danger)';
+            }
+            const btn = document.getElementById('ai-send');
+            if(btn) btn.disabled = aiChargesLeft <= 0;
+        }
+
+        function typeWriter(element, text, speed = 20) {
+            let i = 0;
+            element.classList.add('typing');
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    const container = document.getElementById('ai-messages');
+                    container.scrollTop = container.scrollHeight;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing');
+                }
+            }
+            type();
         }
 
         async function sendAIMessage() {
+            if (aiChargesLeft <= 0) {
+                addChatBubble("CRITICAL: BATTERY DEPLETED.", 'ai');
+                return;
+            }
+
             const input = document.getElementById('ai-input');
             const msg = input.value.trim();
             if (!msg) return;
@@ -430,6 +482,10 @@
             // Add User Message
             addChatBubble(msg, 'user');
             input.value = '';
+            
+            // Decrement Battery
+            aiChargesLeft--;
+            updateBatteryUI();
 
             // Check if Key Exists
             if (typeof AI_CONFIG === 'undefined' || !AI_CONFIG.API_KEY) {
@@ -452,7 +508,6 @@
 
             try {
                 // GOOGLE GEMINI API LOGIC (Using variable model)
-                // Default to gemini-1.5-flash-001 if not set
                 const model = AI_CONFIG.MODEL || "gemini-1.5-flash-001";
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${AI_CONFIG.API_KEY}`;
                 
@@ -468,15 +523,21 @@
 
                 const data = await response.json();
                 
-                document.getElementById(loadingId).remove();
+                // Remove Loading specific bubble only
+                const loadBubble = document.getElementById(loadingId);
+                if(loadBubble) loadBubble.remove();
 
                 if (data.candidates && data.candidates.length > 0) {
-                    addChatBubble(data.candidates[0].content.parts[0].text, 'ai');
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    const aiBubbleId = addChatBubble("", 'ai'); // Create empty bubble
+                    const aiBubble = document.getElementById(aiBubbleId);
+                    typeWriter(aiBubble, aiText); // Stream text into it
                 } else {
                     addChatBubble("API ERROR: " + (data.error ? data.error.message : "Unknown error"), 'ai');
                 }
             } catch (e) {
-                document.getElementById(loadingId).remove();
+                const loadBubble = document.getElementById(loadingId);
+                if(loadBubble) loadBubble.remove();
                 addChatBubble("CONNECTION FAILED: " + e.message, 'ai');
             }
         }
@@ -484,8 +545,9 @@
         function addChatBubble(text, type) {
             const div = document.createElement('div');
             div.className = `msg ${type}`;
-            div.innerText = text;
-            div.id = 'msg-' + Date.now();
+            div.textContent = text; // Use textContent for safety
+            // Generate unique ID to prevent collisions
+            div.id = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
             const container = document.getElementById('ai-messages');
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
@@ -1185,10 +1247,6 @@
             playSfx('click');
             try {
                 const id = Date.now().toString();
-                // Create Minified Payload
-                // Format: { i: id, t: topic, p: [ [Name, RoleInt, Secret] ] }
-                // RoleInt: 0=Cit, 1=Imp, 2=Glitch
-                // Secret: Word (if 0), Hint (if 1), null (if 2)
                 const minPlayers = state.players.map((p, i) => {
                     let rInt = 0; // Citizen
                     let secret = state.secretWord;
