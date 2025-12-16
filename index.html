@@ -392,7 +392,7 @@
             localStorage.setItem('imposterTheme', currentThemeIndex);
         }
 
-        // --- AI LOGIC (UPDATED FOR GOOGLE) ---
+        // --- AI LOGIC (FIXED FOR GOOGLE) ---
         let aiParams = { role: null, word: null, topic: null };
 
         function toggleAIChat() {
@@ -451,8 +451,10 @@
             const loadingId = addChatBubble("Thinking...", 'ai');
 
             try {
-                // GOOGLE GEMINI API LOGIC
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_CONFIG.API_KEY}`;
+                // GOOGLE GEMINI API LOGIC (Using variable model)
+                // Default to gemini-1.5-flash-001 if not set
+                const model = AI_CONFIG.MODEL || "gemini-1.5-flash-001";
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${AI_CONFIG.API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: "POST",
