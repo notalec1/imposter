@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* --- ORIGINAL CYBERPUNK THEME --- */
+        /* --- ORIGINAL CYBERPUNK THEME (DEFAULT) --- */
         :root {
             --bg: #050505;
             --surface: #111;
@@ -23,6 +23,37 @@
             --danger: #f00; /* Red */
             --text: #eee;
             --font: 'Space Grotesk', monospace;
+        }
+
+        /* --- THEME VARIATIONS --- */
+        [data-theme="netrunner"] {
+            --bg: #050005;
+            --surface: #1a001a;
+            --primary: #00ffff; /* Cyan */
+            --secondary: #d500f9; /* Purple */
+            --accent: #ff0055; /* Pink */
+            --warning: #ffea00;
+            --danger: #ff2a2a;
+        }
+
+        [data-theme="biohazard"] {
+            --bg: #0a0a00;
+            --surface: #1a1a00;
+            --primary: #ffff00; /* Yellow */
+            --secondary: #ff3300; /* Red-Orange */
+            --accent: #adff2f; /* GreenYellow */
+            --warning: #ffaa00;
+            --danger: #ff0000;
+        }
+
+        [data-theme="ice"] {
+            --bg: #00050a;
+            --surface: #00111a;
+            --primary: #ffffff; /* White */
+            --secondary: #00aaff; /* Blue */
+            --accent: #00ffff; /* Cyan */
+            --warning: #ffaa00;
+            --danger: #ff3333;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -50,40 +81,37 @@
             pointer-events: none; z-index: 1; opacity: 0.6;
         }
 
-        /* MELTDOWN EFFECT */
-        body.meltdown {
-            animation: red-alert 1s infinite alternate;
+        /* --- THEME BUTTON --- */
+        #theme-btn {
+            position: fixed; top: 20px; left: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.5); border: 2px solid var(--primary);
+            color: var(--primary); font-size: 1.5rem; padding: 10px;
+            border-radius: 50%; cursor: pointer; transition: 0.3s;
+            width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
+        #theme-btn:hover { background: var(--primary); color: var(--bg); transform: rotate(90deg); }
+
+        /* MELTDOWN EFFECT */
+        body.meltdown { animation: red-alert 1s infinite alternate; }
         body.meltdown #matrixCanvas { opacity: 0.1; }
-        
         @keyframes red-alert {
             0% { background-color: #200; box-shadow: inset 0 0 100px #500; }
             100% { background-color: #500; box-shadow: inset 0 0 50px #f00; }
         }
 
-        /* --- NEW: RANDOM VISUAL GLITCH MODE --- */
+        /* GLITCH MODE */
         body.glitch-mode {
             animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
             filter: contrast(1.5) brightness(1.2);
         }
-        body.glitch-mode * {
-            text-shadow: 3px 0 var(--danger), -3px 0 var(--accent);
-            color: white !important;
-        }
-        body.glitch-mode .container {
-            border: 2px dashed white;
-            background: rgba(0,0,0,0.9);
-        }
-        
+        body.glitch-mode * { text-shadow: 3px 0 var(--danger), -3px 0 var(--accent); color: white !important; }
+        body.glitch-mode .container { border: 2px dashed white; background: rgba(0,0,0,0.9); }
         @keyframes glitch-skew {
-            0% { transform: translate(0) }
-            20% { transform: translate(-3px, 3px) skewX(5deg) }
-            40% { transform: translate(-3px, -3px) skewX(5deg) }
-            60% { transform: translate(3px, 3px) skewX(-5deg) }
-            80% { transform: translate(3px, -3px) skewX(-5deg) }
-            100% { transform: translate(0) }
+            0% { transform: translate(0) } 20% { transform: translate(-3px, 3px) skewX(5deg) }
+            40% { transform: translate(-3px, -3px) skewX(5deg) } 60% { transform: translate(3px, 3px) skewX(-5deg) }
+            80% { transform: translate(3px, -3px) skewX(-5deg) } 100% { transform: translate(0) }
         }
-
         #glitch-overlay-text {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 3rem; font-weight: bold; color: white; background: red; padding: 10px 20px;
@@ -145,12 +173,8 @@
         .btn-danger { border-color: var(--secondary); color: var(--secondary); }
         .btn-danger:hover { background: var(--secondary); color: white; box-shadow: 0 0 20px var(--secondary); }
 
-        .btn-small { 
-            padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; 
-            min-width: 60px;
-        }
+        .btn-small { padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; min-width: 60px; }
 
-        /* Control Group for Timer/Settings */
         .control-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0; }
         .control-label { color: var(--accent); font-size: 0.9rem; width: 90px; text-align: right; }
         .control-value { font-family: monospace; font-size: 1.2rem; min-width: 40px; display: inline-block; }
@@ -281,9 +305,7 @@
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
 
         /* SETTINGS SECTION */
-        .settings-panel {
-            background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid #333; margin: 20px 0;
-        }
+        .settings-panel { background: rgba(0,0,0,0.3); padding: 15px; border: 1px solid #333; margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -292,6 +314,9 @@
     <canvas id="matrixCanvas"></canvas>
     <div class="scanlines"></div>
     <div id="glitch-overlay-text">CONNECTION CORRUPT</div>
+
+    <!-- THEME BUTTON -->
+    <button id="theme-btn" onclick="cycleTheme()">🎨</button>
 
     <!-- MAIN APP -->
     <div id="app" class="container">
@@ -333,7 +358,7 @@
             const draw = () => {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#0F0';
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--primary').trim();
                 ctx.font = fontSize + 'px monospace';
                 for(let i = 0; i < drops.length; i++) {
                     const text = chars.charAt(Math.floor(Math.random() * chars.length));
@@ -441,7 +466,34 @@
         function safeBtoa(str) { return btoa(unescape(encodeURIComponent(str))); }
         function safeAtob(str) { return decodeURIComponent(escape(atob(str))); }
 
+        // --- THEME LOGIC ---
+        const THEMES = [null, 'netrunner', 'biohazard', 'ice']; // null = default
+        let currentThemeIndex = 0;
+
+        function cycleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+            applyTheme();
+            playSfx('click');
+        }
+
+        function applyTheme() {
+            const theme = THEMES[currentThemeIndex];
+            if (theme) {
+                document.body.setAttribute('data-theme', theme);
+            } else {
+                document.body.removeAttribute('data-theme');
+            }
+            localStorage.setItem('imposterTheme', currentThemeIndex);
+        }
+
         function init() {
+            // Load Theme
+            const savedTheme = localStorage.getItem('imposterTheme');
+            if (savedTheme) {
+                currentThemeIndex = parseInt(savedTheme);
+                applyTheme();
+            }
+
             initMatrix();
             try {
                 if (params.has('data')) {
@@ -566,13 +618,12 @@
             renderHostScreen(); 
             requestWakeLock();
             setTimeout(animateStartingPlayer, 500);
-            scheduleGlitch(); // START RANDOM GLITCHES
+            scheduleGlitch(); 
         }
 
         // --- VISUAL GLITCH LOGIC ---
         function scheduleGlitch() {
             if(state.step !== 'GAME') return;
-            // Random time between 20s and 45s
             const time = Math.random() * 25000 + 20000;
             setTimeout(() => {
                 if(state.step !== 'GAME') return;
@@ -586,7 +637,7 @@
             document.body.classList.add('glitch-mode');
             setTimeout(() => {
                 document.body.classList.remove('glitch-mode');
-            }, 2500); // Lasts 2.5 seconds
+            }, 2500);
         }
 
         function startVoting() { 
@@ -886,9 +937,12 @@
                             document.body.classList.remove('meltdown');
                         }
                     } else {
+                        // Negative Timer Logic (Intentional)
+                        // display = "0:00"; // UNCOMMENT TO FREEZE AT 0:00
                         const overtime = Math.abs(remaining);
                         const s = (overtime % 60).toString().padStart(2, '0');
                         display = `-${Math.floor(overtime/60)}:${s}`;
+                        
                         timerEl.classList.add('critical');
                         document.body.classList.add('meltdown');
                         if(!playedAlarm) { playSfx('alarm'); playedAlarm = true; }
@@ -1126,10 +1180,6 @@
             playSfx('click');
             try {
                 const id = Date.now().toString();
-                // Create Minified Payload
-                // Format: { i: id, t: topic, p: [ [Name, RoleInt, Secret] ] }
-                // RoleInt: 0=Cit, 1=Imp, 2=Glitch
-                // Secret: Word (if 0), Hint (if 1), null (if 2)
                 const minPlayers = state.players.map((p, i) => {
                     let rInt = 0; // Citizen
                     let secret = state.secretWord;
