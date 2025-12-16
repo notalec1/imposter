@@ -218,9 +218,9 @@
     <button id="theme-btn" onclick="cycleTheme()">🎨</button>
     <button id="ai-btn" onclick="toggleAIChat()">🤖</button>
 
-    <!-- AI CHAT OVERLAY -->
-    <div id="ai-modal-overlay">
-        <div id="ai-chat-box">
+    <!-- AI CHAT OVERLAY (Updated with onClick to close) -->
+    <div id="ai-modal-overlay" onclick="toggleAIChat()">
+        <div id="ai-chat-box" onclick="event.stopPropagation()">
             <div class="ai-header">
                 <span>// TACTICAL.AI</span>
                 <span class="ai-battery" id="ai-battery-display">BATTERY: |||</span>
@@ -230,7 +230,8 @@
                 <div class="msg ai">System Online. How may I assist your mission?</div>
             </div>
             <div class="ai-input-area">
-                <input type="text" id="ai-input" placeholder="Type query..." autocomplete="off">
+                <!-- Added enter key support -->
+                <input type="text" id="ai-input" placeholder="Type query..." autocomplete="off" onkeydown="if(event.key==='Enter') sendAIMessage()">
                 <button id="ai-send" onclick="sendAIMessage()">></button>
             </div>
         </div>
@@ -255,7 +256,7 @@
 
     <script>
         // --- TWEAKABLE AI SETTINGS ---
-        const AI_MAX_CHARGES = 3; // Change this number to limit questions per session
+        const AI_MAX_CHARGES = 4; // Change this number to limit questions per session
 
         // --- PRESET NAMES ---
         const PRESET_NAMES = [
@@ -271,7 +272,7 @@
             canvas.height = window.innerHeight;
             
             const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテト';
-            const fontSize = 14;
+            const fontSize = 12;
             const columns = canvas.width / fontSize;
             const drops = [];
             for(let x = 0; x < columns; x++) drops[x] = 1;
@@ -555,6 +556,21 @@
         }
 
         function init() {
+            // GLOBAL KEY LISTENER FOR ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape") {
+                    const qr = document.getElementById('qrModal');
+                    const ai = document.getElementById('ai-modal-overlay');
+                    if (qr && qr.classList.contains('active')) closeModal();
+                    if (ai && ai.style.display === 'flex') toggleAIChat();
+                    // If in settings/history/stats (renderers), we can just go back to lobby
+                    if (['HISTORY', 'STATS', 'SETTINGS'].includes(state.step)) {
+                        state.step = 'LOBBY';
+                        renderHostScreen();
+                    }
+                }
+            });
+
             // Load Theme
             const savedTheme = localStorage.getItem('imposterTheme');
             if (savedTheme) {
