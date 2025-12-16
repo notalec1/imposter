@@ -61,6 +61,37 @@
             100% { background-color: #500; box-shadow: inset 0 0 50px #f00; }
         }
 
+        /* --- NEW: RANDOM VISUAL GLITCH MODE --- */
+        body.glitch-mode {
+            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+            filter: contrast(1.5) brightness(1.2);
+        }
+        body.glitch-mode * {
+            text-shadow: 3px 0 var(--danger), -3px 0 var(--accent);
+            color: white !important;
+        }
+        body.glitch-mode .container {
+            border: 2px dashed white;
+            background: rgba(0,0,0,0.9);
+        }
+        
+        @keyframes glitch-skew {
+            0% { transform: translate(0) }
+            20% { transform: translate(-3px, 3px) skewX(5deg) }
+            40% { transform: translate(-3px, -3px) skewX(5deg) }
+            60% { transform: translate(3px, 3px) skewX(-5deg) }
+            80% { transform: translate(3px, -3px) skewX(-5deg) }
+            100% { transform: translate(0) }
+        }
+
+        #glitch-overlay-text {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 3rem; font-weight: bold; color: white; background: red; padding: 10px 20px;
+            z-index: 200; display: none; text-align: center; pointer-events: none;
+            box-shadow: 10px 10px 0 black;
+        }
+        body.glitch-mode #glitch-overlay-text { display: block; }
+
         .container { 
             width: 100%; max-width: 600px; text-align: center; 
             z-index: 10; position: relative; 
@@ -103,7 +134,6 @@
             cursor: pointer; width: 100%; margin-top: 15px; position: relative;
             transition: 0.2s; 
             clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-            /* Center Content Fix */
             display: flex; justify-content: center; align-items: center;
         }
         .btn:hover { background: var(--primary); color: var(--bg); box-shadow: 0 0 15px var(--primary); }
@@ -117,7 +147,6 @@
 
         .btn-small { 
             padding: 10px 15px; font-size: 0.8rem; margin: 5px; width: auto; 
-            /* Fix for small buttons being clipped */
             min-width: 60px;
         }
 
@@ -262,6 +291,7 @@
     <!-- BACKGROUND LAYERS -->
     <canvas id="matrixCanvas"></canvas>
     <div class="scanlines"></div>
+    <div id="glitch-overlay-text">CONNECTION CORRUPT</div>
 
     <!-- MAIN APP -->
     <div id="app" class="container">
@@ -280,7 +310,7 @@
         </div>
     </div>
 
-<script>
+    <script>
         // --- PRESET NAMES ---
         const PRESET_NAMES = [
             "ALEC", "ALAIN", "NADA", "HODA", "FADI", "NOA", "GIO", "NEO", 
@@ -466,6 +496,7 @@
             state.imposterIndices = []; state.glitchIndex = null;
             state.startingPlayer = null; 
             document.body.classList.remove('meltdown'); 
+            document.body.classList.remove('glitch-mode');
             saveState(); 
             renderLobby(); 
         }
@@ -535,12 +566,34 @@
             renderHostScreen(); 
             requestWakeLock();
             setTimeout(animateStartingPlayer, 500);
+            scheduleGlitch(); // START RANDOM GLITCHES
+        }
+
+        // --- VISUAL GLITCH LOGIC ---
+        function scheduleGlitch() {
+            if(state.step !== 'GAME') return;
+            // Random time between 20s and 45s
+            const time = Math.random() * 25000 + 20000;
+            setTimeout(() => {
+                if(state.step !== 'GAME') return;
+                triggerGlitchEffect();
+                scheduleGlitch();
+            }, time);
+        }
+
+        function triggerGlitchEffect() {
+            playSfx('scan');
+            document.body.classList.add('glitch-mode');
+            setTimeout(() => {
+                document.body.classList.remove('glitch-mode');
+            }, 2500); // Lasts 2.5 seconds
         }
 
         function startVoting() { 
             playSfx('alarm'); 
             state.step = 'VOTING'; 
             document.body.classList.remove('meltdown'); 
+            document.body.classList.remove('glitch-mode');
             saveState(); 
             renderHostScreen(); 
         }
@@ -836,7 +889,6 @@
                         const overtime = Math.abs(remaining);
                         const s = (overtime % 60).toString().padStart(2, '0');
                         display = `-${Math.floor(overtime/60)}:${s}`;
-                        // Change these 3 lines above to [ display = "0:00"; ] if I don't want timer to go to negatives.
                         timerEl.classList.add('critical');
                         document.body.classList.add('meltdown');
                         if(!playedAlarm) { playSfx('alarm'); playedAlarm = true; }
