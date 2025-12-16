@@ -836,6 +836,7 @@
                         const overtime = Math.abs(remaining);
                         const s = (overtime % 60).toString().padStart(2, '0');
                         display = `-${Math.floor(overtime/60)}:${s}`;
+                        // Change these 3 lines above to [ display = "0:00"; ] if I don't want timer to go to negatives.
                         timerEl.classList.add('critical');
                         document.body.classList.add('meltdown');
                         if(!playedAlarm) { playSfx('alarm'); playedAlarm = true; }
