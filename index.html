@@ -11,7 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- LOAD AI KEY (Create this file!) -->
+    <!-- LOAD AI KEY -->
     <script src="ai_key.js"></script> 
     
     <style>
@@ -392,7 +392,7 @@
             localStorage.setItem('imposterTheme', currentThemeIndex);
         }
 
-        // --- AI LOGIC ---
+        // --- AI LOGIC (UPDATED FOR GOOGLE) ---
         let aiParams = { role: null, word: null, topic: null };
 
         function toggleAIChat() {
@@ -433,7 +433,7 @@
 
             // Check if Key Exists
             if (typeof AI_CONFIG === 'undefined' || !AI_CONFIG.API_KEY) {
-                addChatBubble("ERROR: ai_key.js not found or configured.", 'ai');
+                addChatBubble("ERROR: ai_key.js not found.", 'ai');
                 return;
             }
 
@@ -451,32 +451,27 @@
             const loadingId = addChatBubble("Thinking...", 'ai');
 
             try {
-                // Simple fetch wrapper compatible with OpenAI structure
-                const response = await fetch(AI_CONFIG.API_URL, {
+                // GOOGLE GEMINI API LOGIC
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AI_CONFIG.API_KEY}`;
+                
+                const response = await fetch(url, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${AI_CONFIG.API_KEY}`
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        model: AI_CONFIG.MODEL,
-                        messages: [
-                            { role: "system", content: systemContext },
-                            { role: "user", content: msg }
-                        ],
-                        max_tokens: 100
+                        contents: [{
+                            parts: [{ text: systemContext + "\n\nUSER QUERY: " + msg }]
+                        }]
                     })
                 });
 
                 const data = await response.json();
                 
-                // Remove Loading
                 document.getElementById(loadingId).remove();
 
-                if (data.choices && data.choices.length > 0) {
-                    addChatBubble(data.choices[0].message.content, 'ai');
-                } else if (data.error) {
-                    addChatBubble("API ERROR: " + data.error.message, 'ai');
+                if (data.candidates && data.candidates.length > 0) {
+                    addChatBubble(data.candidates[0].content.parts[0].text, 'ai');
+                } else {
+                    addChatBubble("API ERROR: " + (data.error ? data.error.message : "Unknown error"), 'ai');
                 }
             } catch (e) {
                 document.getElementById(loadingId).remove();
@@ -1188,6 +1183,10 @@
             playSfx('click');
             try {
                 const id = Date.now().toString();
+                // Create Minified Payload
+                // Format: { i: id, t: topic, p: [ [Name, RoleInt, Secret] ] }
+                // RoleInt: 0=Cit, 1=Imp, 2=Glitch
+                // Secret: Word (if 0), Hint (if 1), null (if 2)
                 const minPlayers = state.players.map((p, i) => {
                     let rInt = 0; // Citizen
                     let secret = state.secretWord;
