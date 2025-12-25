@@ -78,6 +78,8 @@ There is no installation required! This is a **serverless** web app.
 3.  Select `main` branch and save.
 4.  Your game is now live at `your-username.github.io/imposter`.
 
+### OR play right away at notalec1.github.io/imposter. Have fun!
+
 ---
 
 ## 🏗️ Technologies
