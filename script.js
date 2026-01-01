@@ -1,4 +1,3 @@
-  <script>
         // --- TWEAKABLE AI SETTINGS ---
         const AI_MAX_CHARGES = 4; // Change this number to limit questions per session
 
@@ -1076,4 +1075,3 @@
         }
 
         init();
-    </script>
