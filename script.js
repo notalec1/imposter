@@ -581,7 +581,7 @@
 
                 ${state.players.length >= 3 ? `
                     <div class="topic-grid">
-                        <div class="topic-card chaos-card" onclick="startGame('CHAOS')">â ï¸ CHAOS MODE</div>
+                        <div class="topic-card chaos-card" onclick="startGame('CHAOS')">CHAOS MODE</div>
                         ${Object.keys(GAME_DATA).map(t => `<div class="topic-card" onclick="startGame('${t}')">${t}</div>`).join('')}
                         <div class="topic-card" style="border-color:var(--secondary); color:var(--secondary)" onclick="startGame('CUSTOM')">Custom...</div>
                     </div>
