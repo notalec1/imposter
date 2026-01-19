@@ -492,32 +492,33 @@
             if (state.imposterIndices.includes(state.votedIndex)) {
                 // --- CORRECT VOTE (IMPOSTER CAUGHT) ---
                 
-                // Remove the caught imposter from the list of active imposters
+                // Remove the caught imposter from the tracking list
                 state.imposterIndices = state.imposterIndices.filter(i => i !== state.votedIndex);
 
                 if (state.imposterIndices.length === 0) {
-                    // ALL IMPOSTERS ELIMINATED -> CITIZENS WIN
+                    // LAST IMPOSTER ELIMINATED -> CITIZENS WIN
                     finalizeGame("CITIZENS");
                 } else {
                     // --- GAME CONTINUES (ONE DOWN, MORE TO GO) ---
                     const removedIndex = state.votedIndex;
                     const removedName = state.players[removedIndex];
 
-                    // Visual Feedback
                     alert(`CONFIRMED: ${removedName} was an Imposter.\n\nSYSTEM WARNING: THREATS REMAINING.`);
                     
-                    // Remove the player from the game array
+                    // Remove player from array
                     state.players.splice(removedIndex, 1);
 
-                    // Shift indices for remaining Imposters (if they were after the removed player)
+                    // Update indices for remaining Imposters
+                    // If an imposter was at index 4, and we removed index 2, the imposter is now at index 3
                     state.imposterIndices = state.imposterIndices.map(idx => idx > removedIndex ? idx - 1 : idx);
 
-                    // Shift index for Glitch (if they were after the removed player)
-                    if (state.glitchIndex !== null && state.glitchIndex > removedIndex) {
-                        state.glitchIndex--;
+                    // Update index for Glitch
+                    if (state.glitchIndex !== null) {
+                         if (state.glitchIndex > removedIndex) state.glitchIndex--;
+                         else if (state.glitchIndex === removedIndex) state.glitchIndex = null; // Should not happen due to check #1, but safe to keep
                     }
 
-                    // Resume Game
+                    // Reset for next round
                     state.step = 'GAME';
                     state.votedIndex = null;
                     saveState();
@@ -549,15 +550,19 @@
                 bannerClass = "win-imposter";
             }
 
-            // Save to History
-            // Note: Since we might have removed players, we reconstruct the log best we can
-            const imposterNames = state.imposterIndices.map(i => state.players[i]).join(', '); // Remaining imps
+            // --- SAFETY FIX FOR NULL NAMES ---
+            // We map indices to names, then filter out any 'undefined' results
+            const imposterList = state.imposterIndices
+                .map(i => state.players[i])
+                .filter(name => name !== undefined && name !== null);
+            
+            const imposterNames = imposterList.length > 0 ? imposterList.join(' & ') : "Unknown Agent";
 
             state.history.unshift({
                 date: new Date().toLocaleString(),
                 topic: state.topic,
                 word: state.secretWord,
-                imposters: imposterNames || "Eliminated",
+                imposters: imposterNames,
                 winner: winner
             });
             if(state.history.length > 50) state.history.pop();
