@@ -37,7 +37,6 @@
         };
 
         // --- EXPANDED GAME DATA ---
-        const GAME_DATA = {
             const GAME_DATA = {
             "Food": [
                 { w: "Pizza", h: "Cheesy" }, { w: "Sushi", h: "Fish" }, { w: "Tacos", h: "Mexican" },
