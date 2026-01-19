@@ -955,7 +955,7 @@
                     <span>AGENT: <strong>${name}</strong></span><span style="font-size:0.8rem; opacity:0.7;">${topic}</span>
                 </div>
                 <div class="secret-box" id="mobileBox">
-                    <div class="fingerprint-icon">âï¸</div>
+                    <div class="fingerprint-icon">🫆</div>
                     <div class="secret-content" style="${color}">${displayWord}</div>
                     ${role !== 'CITIZEN' ? `<div class="hint-text">${displayHint}</div>` : ''}
                 </div>
@@ -1070,7 +1070,7 @@
                 color = 'color:var(--warning)';
                 isSecret = true;
             }
-            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">âï¸</div><div class="secret-content" style="${color}">${displayWord}</div>${isSecret ? `<div class="hint-text">${displayHint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
+            app.innerHTML = `<h2>IDENTITY</h2><div class="secret-box" id="passBox"><div class="fingerprint-icon">🫆</div><div class="secret-content" style="${color}">${displayWord}</div>${isSecret ? `<div class="hint-text">${displayHint}</div>` : ''}</div><button class="btn" id="nextBtn" style="opacity:0; pointer-events:none;" onclick="state.passIndex++; state.passIndex >= state.players.length ? startRound() : renderHostScreen()">CONFIRM & CLEAR</button>`;
             bindRevealEvents('passBox', isSecret);
             const box = document.getElementById('passBox');
             const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
