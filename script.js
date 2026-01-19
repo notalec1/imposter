@@ -388,6 +388,7 @@
             playSfx('scan');
             state.topic = topicKey;
 
+            // ... (Topic Selection Logic kept simple for brevity, existing logic works fine) ...
             if (topicKey === 'CUSTOM') {
                 const input = prompt("Enter words separated by comma (e.g. Apple, Banana)");
                 if (!input) return;
@@ -422,6 +423,10 @@
             for(let k=0; k<state.settings.imposterCount; k++) {
                 state.imposterIndices.push(indices.pop());
             }
+
+            // --- NEW: SAVE IMPOSTER NAMES PERMANENTLY ---
+            state.initialImposters = state.imposterIndices.map(i => state.players[i]);
+            // -------------------------------------------
 
             if(state.settings.hasGlitch && indices.length > 0) {
                 state.glitchIndex = indices.pop();
@@ -550,13 +555,18 @@
                 bannerClass = "win-imposter";
             }
 
-            // --- SAFETY FIX FOR NULL NAMES ---
-            // We map indices to names, then filter out any 'undefined' results
-            const imposterList = state.imposterIndices
-                .map(i => state.players[i])
-                .filter(name => name !== undefined && name !== null);
-            
-            const imposterNames = imposterList.length > 0 ? imposterList.join(' & ') : "Unknown Agent";
+            // --- USE SAVED SNAPSHOT OF NAMES ---
+            let imposterNames = "";
+            if (state.initialImposters && state.initialImposters.length > 0) {
+                // Use the permanently saved list
+                imposterNames = state.initialImposters.join(' & ');
+            } else {
+                // Fallback for older save states (just in case)
+                const imposterList = state.imposterIndices
+                    .map(i => state.players[i])
+                    .filter(name => name !== undefined && name !== null);
+                imposterNames = imposterList.length > 0 ? imposterList.join(' & ') : "Unknown Agent";
+            }
 
             state.history.unshift({
                 date: new Date().toLocaleString(),
