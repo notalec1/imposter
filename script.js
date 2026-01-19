@@ -14,7 +14,8 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン天地玄黄宇宙洪荒陰陽五行道德無為混沌虚空命運中日韓漢字未知系統解析構造龘齉齾靐饕鬱魑魅魍魎#$%&@*+=-<>?/\\|{}[]()⟊⟁⧫⟡⌁⌂⌬⍜⍝⎔⎊⏣⌘⏁⏃⏚⏀░▒▓█▄▀■□▪▫▲△▼▽◆◇○●◎◉';            const fontSize = 12;
+            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン天地玄黄宇宙洪荒陰陽五行道德無為混沌虚空命運中日韓漢字未知系統解析構造龘齉齾靐饕鬱魑魅魍魎#$%&@*+=-<>?/\\|{}[]()⟊⟁⧫⟡⌁⌂⌬⍜⍝⎔⎊⏣⌘⏁⏃⏚⏀░▒▓█▄▀■□▪▫▲△▼▽◆◇○●◎◉';           
+            const fontSize = 12;
             const columns = canvas.width / fontSize;
             const drops = [];
             for(let x = 0; x < columns; x++) drops[x] = 1;
