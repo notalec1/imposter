@@ -481,22 +481,83 @@
         function submitVote() {
             if (state.votedIndex === null) return alert("Select the suspect!");
             playSfx('reveal');
+
+            // 1. CHECK IF GLITCH (Instant Game Over)
+            if (state.votedIndex === state.glitchIndex) {
+                finalizeGame("THE GLITCH");
+                return;
+            }
+
+            // 2. CHECK IF IMPOSTER
+            if (state.imposterIndices.includes(state.votedIndex)) {
+                // --- CORRECT VOTE (IMPOSTER CAUGHT) ---
+                
+                // Remove the caught imposter from the list of active imposters
+                state.imposterIndices = state.imposterIndices.filter(i => i !== state.votedIndex);
+
+                if (state.imposterIndices.length === 0) {
+                    // ALL IMPOSTERS ELIMINATED -> CITIZENS WIN
+                    finalizeGame("CITIZENS");
+                } else {
+                    // --- GAME CONTINUES (ONE DOWN, MORE TO GO) ---
+                    const removedIndex = state.votedIndex;
+                    const removedName = state.players[removedIndex];
+
+                    // Visual Feedback
+                    alert(`CONFIRMED: ${removedName} was an Imposter.\n\nSYSTEM WARNING: THREATS REMAINING.`);
+                    
+                    // Remove the player from the game array
+                    state.players.splice(removedIndex, 1);
+
+                    // Shift indices for remaining Imposters (if they were after the removed player)
+                    state.imposterIndices = state.imposterIndices.map(idx => idx > removedIndex ? idx - 1 : idx);
+
+                    // Shift index for Glitch (if they were after the removed player)
+                    if (state.glitchIndex !== null && state.glitchIndex > removedIndex) {
+                        state.glitchIndex--;
+                    }
+
+                    // Resume Game
+                    state.step = 'GAME';
+                    state.votedIndex = null;
+                    saveState();
+                    renderHostScreen();
+                }
+            } else {
+                // --- WRONG VOTE (INNOCENT EJECTED) -> IMPOSTERS WIN ---
+                finalizeGame("IMPOSTERS");
+            }
+        }
+
+        // --- NEW HELPER FUNCTION TO HANDLE END GAME VISUALS ---
+        function finalizeGame(winner) {
             state.step = 'RESULTS';
             
-            let winner = "CITIZENS";
-            if (state.imposterIndices.includes(state.votedIndex)) {
-                winner = "CITIZENS"; 
-            } else if (state.votedIndex === state.glitchIndex) {
-                winner = "THE GLITCH"; 
+            let resultTitle, resultMsg, bannerClass;
+            
+            if (winner === "THE GLITCH") {
+                resultTitle = "GLITCH WINS";
+                resultMsg = "System Error: The Glitch Wanted Disconnection";
+                bannerClass = "win-glitch";
+            } else if (winner === "CITIZENS") {
+                resultTitle = "CITIZENS WIN";
+                resultMsg = "All Imposters Neutralized";
+                bannerClass = "win-citizen";
             } else {
-                winner = "IMPOSTERS"; 
+                resultTitle = "IMPOSTERS WIN";
+                resultMsg = "System Compromised. Innocent Agent Ejected.";
+                bannerClass = "win-imposter";
             }
+
+            // Save to History
+            // Note: Since we might have removed players, we reconstruct the log best we can
+            const imposterNames = state.imposterIndices.map(i => state.players[i]).join(', '); // Remaining imps
 
             state.history.unshift({
                 date: new Date().toLocaleString(),
                 topic: state.topic,
                 word: state.secretWord,
-                imposters: state.imposterIndices.map(i => state.players[i]).join(', '),
+                imposters: imposterNames || "Eliminated",
                 winner: winner
             });
             if(state.history.length > 50) state.history.pop();
@@ -712,12 +773,12 @@
                 <h2>Topic: ${state.topic}</h2>
                 <div class="grid-names" style="gap:15px; margin-top:30px;">
                     <button class="btn" style="border-color:var(--accent); color:var(--accent); padding:25px;" onclick="showRoomQR()">
-                        ð  SHOW ROOM QR <br><span style="font-size:0.8rem">(Scan once for everyone)</span>
+                        🏠SHOW ROOM QR <br><span style="font-size:0.8rem">( Scan once )</span>
                     </button>
                 </div>
                 <p style="margin:20px 0;">-- OR INDIVIDUAL --</p>
                 <div class="grid-names">
-                    ${state.players.map((p, i) => `<button class="btn btn-secondary" onclick="showPlayerQR(${i})" style="width:auto; padding:10px;">ð± ${p}</button>`).join('')}
+                    ${state.players.map((p, i) => `<button class="btn btn-secondary" onclick="showPlayerQR(${i})" style="width:auto; padding:10px;">📱${p}</button>`).join('')}
                 </div>
                 <button class="btn" style="margin-top:30px;" onclick="startRound()">START MISSION</button>
                 <button class="btn btn-secondary" onclick="resetGame()" style="margin-top:10px;">ABORT</button>
@@ -736,7 +797,7 @@
                     <button class="btn btn-small" style="width:70px" onclick="modifyTime(-10)">-10S</button>
                     <button class="btn btn-small" style="width:70px" onclick="modifyTime(10)">+10S</button>
                 </div>
-                <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">ð² SPIN NEXT SPEAKER</button>
+                <button class="btn btn-secondary btn-small" onclick="spinNextPlayer()">🎲SPIN NEXT SPEAKER</button>
                 <div style="margin-top:40px;">
                     <button class="btn btn-danger" onclick="startVoting()">EMERGENCY MEETING / VOTE</button>
                 </div>
@@ -847,7 +908,7 @@
                 <h1 style="color:var(--secondary); animation:pulse-red 2s infinite;">VOTING PHASE</h1>
                 <p>Who is the Imposter?</p>
                 <div class="voting-grid">
-                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="selectVote(${i})"><div style="font-size:2rem; margin-bottom:10px;">ð¤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
+                    ${state.players.map((p, i) => `<div class="vote-card ${state.votedIndex === i ? 'selected' : ''}" onclick="selectVote(${i})"><div style="font-size:2rem; margin-bottom:10px;">👤</div><div style="font-weight:bold;">${p}</div></div>`).join('')}
                 </div>
                 <button class="btn btn-danger" onclick="submitVote()">EXECUTE SELECTED</button>
             `;
@@ -924,7 +985,7 @@
             }
 
             app.innerHTML = `<h2>SELECT IDENTITY</h2><div class="room-list" style="display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto;">
-                ${players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${rTopic}', '${rId}')"><strong>${p.name}</strong><span>ð</span></button>`).join('')}
+                ${players.map(p => `<button class="btn" style="text-align:left; display:flex; justify-content:space-between;" onclick="claimIdentity('${p.name}', '${p.role}', '${p.word}', '${p.hint}', '${rTopic}', '${rId}')"><strong>${p.name}</strong><span>👉</span></button>`).join('')}
             </div>`;
         }
 
@@ -962,7 +1023,7 @@
                 <p style="font-size:0.8rem; margin-top:20px;">HOLD TO DECRYPT</p>
                 <div style="margin-top:50px; border-top:1px solid #333; padding-top:20px;">
                     <p style="font-size:0.8rem; margin-bottom:5px;">TOOLS</p>
-                    <button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">ð³ï¸ OPEN VOTING GUIDE</button>
+                    <button class="btn btn-secondary" onclick="this.style.background='var(--secondary)'; this.innerText='VOTING...';">🗳️OPEN VOTING GUIDE (Coming Soon)</button>
                 </div>
             `;
             bindRevealEvents('mobileBox', role !== 'CITIZEN');
