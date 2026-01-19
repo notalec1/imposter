@@ -1,5 +1,5 @@
         // --- TWEAKABLE AI SETTINGS ---
-        const AI_MAX_CHARGES = 4; // Change this number to limit questions per session
+        const AI_MAX_CHARGES = 3; // Change this number to limit questions per session
 
         // --- PRESET NAMES ---
         const PRESET_NAMES = [
@@ -14,8 +14,7 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             
-            const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZã¢ã¤ã¦ã¨ãªã«ã­ã¯ã±ã³ãµã·ã¹ã»ã½ã¿ãããã';
-            const fontSize = 12;
+         const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン天地玄黄宇宙洪荒陰陽五行道德無為混沌虚空命運中日韓漢字未知系統解析構造龘齉齾靐饕鬱魑魅魍魎#$%&@*+=-<>?/\\|{}[]()⟊⟁⧫⟡⌁⌂⌬⍜⍝⎔⎊⏣⌘⏁⏃⏚⏀░▒▓█▄▀■□▪▫▲△▼▽◆◇○●◎◉';            const fontSize = 12;
             const columns = canvas.width / fontSize;
             const drops = [];
             for(let x = 0; x < columns; x++) drops[x] = 1;
@@ -38,55 +37,56 @@
 
         // --- EXPANDED GAME DATA ---
         const GAME_DATA = {
+            const GAME_DATA = {
             "Food": [
-                { w: "Pizza", h: "Cheesy / Round" }, { w: "Sushi", h: "Rice / Fish" }, { w: "Tacos", h: "Shell / Mexican" },
-                { w: "Burger", h: "Bun / Beef" }, { w: "Pasta", h: "Italian / Noodle" }, { w: "Ice Cream", h: "Cold / Sweet" },
-                { w: "Steak", h: "Meat / Grill" }, { w: "Salad", h: "Green / Leafy" }, { w: "Soup", h: "Liquid / Spoon" }, { w: "Curry", h: "Spicy / Sauce" },
-                { w: "Popcorn", h: "Movie / Corn" }, { w: "Donut", h: "Round / Hole" }, { w: "Chocolate", h: "Sweet / Brown" }
+                { w: "Pizza", h: "Cheesy" }, { w: "Sushi", h: "Fish" }, { w: "Tacos", h: "Mexican" },
+                { w: "Burger", h: "Beef" }, { w: "Pasta", h: "Noodle" }, { w: "Ice Cream", h: "Cold" },
+                { w: "Steak", h: "Grill" }, { w: "Salad", h: "Green" }, { w: "Soup", h: "Liquid" }, { w: "Curry", h: "Spicy" },
+                { w: "Popcorn", h: "Movie" }, { w: "Donut", h: "Hole" }, { w: "Chocolate", h: "Sweet" }
             ],
             "Animals": [
-                { w: "Lion", h: "King / Roar" }, { w: "Penguin", h: "Ice / Bird" }, { w: "Shark", h: "Ocean / Teeth" },
-                { w: "Eagle", h: "Fly / USA" }, { w: "Elephant", h: "Trunk / Grey" }, { w: "Giraffe", h: "Tall / Neck" },
-                { w: "Panda", h: "Bamboo / B&W" }, { w: "Snake", h: "Slither / Long" }, { w: "Spider", h: "8 Legs / Web" }, { w: "Frog", h: "Jump / Green" },
-                { w: "Bat", h: "Cave / Night" }, { w: "Kangaroo", h: "Jump / Pouch" }, { w: "Octopus", h: "8 Arms / Sea" }
+                { w: "Lion", h: "Roar" }, { w: "Penguin", h: "Ice" }, { w: "Shark", h: "Ocean" },
+                { w: "Eagle", h: "Fly" }, { w: "Elephant", h: "Trunk" }, { w: "Giraffe", h: "Tall" },
+                { w: "Panda", h: "Bamboo" }, { w: "Snake", h: "Slither" }, { w: "Spider", h: "Web" }, { w: "Frog", h: "Jump" },
+                { w: "Bat", h: "Night" }, { w: "Kangaroo", h: "Pouch" }, { w: "Octopus", h: "8 Arms" }
             ],
             "Jobs": [
-                { w: "Doctor", h: "Hospital / Heal" }, { w: "Teacher", h: "School / Learn" }, { w: "Pilot", h: "Plane / Fly" },
-                { w: "Chef", h: "Kitchen / Cook" }, { w: "Firefighter", h: "Fire / Hose" }, { w: "Artist", h: "Paint / Draw" },
-                { w: "Clown", h: "Funny / Circus" }, { w: "Spy", h: "Secret / Bond" }, { w: "Coder", h: "Computer / Type" }, { w: "Lawyer", h: "Court / Suit" },
-                { w: "Cop", h: "Badge / Law" }, { w: "Farmer", h: "Crops / Animals" }, { w: "Astronaut", h: "Space / Suit" }
+                { w: "Doctor", h: "Hospital" }, { w: "Teacher", h: "School" }, { w: "Pilot", h: "Fly" },
+                { w: "Chef", h: "Cook" }, { w: "Firefighter", h: "Fire" }, { w: "Artist", h: "Paint" },
+                { w: "Clown", h: "Circus" }, { w: "Spy", h: "Secret" }, { w: "Coder", h: "Computer" }, { w: "Lawyer", h: "Court" },
+                { w: "Cop", h: "Badge" }, { w: "Farmer", h: "Crops" }, { w: "Astronaut", h: "Space" }
             ],
             "Places": [
-                { w: "School", h: "Study / Class" }, { w: "Hospital", h: "Doctors / Sick" }, { w: "Beach", h: "Sand / Ocean" },
-                { w: "Space Station", h: "Orbit / Stars" }, { w: "Prison", h: "Jail / Bars" }, { w: "Library", h: "Quiet / Books" },
-                { w: "Casino", h: "Gambling / Chips" }, { w: "Zoo", h: "Animals / Cages" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout / Sweat" },
-                { w: "Cinema", h: "Movies / Corn" }, { w: "Museum", h: "Old / Art" }, { w: "Graveyard", h: "Dead / Spooky" }
+                { w: "School", h: "Study" }, { w: "Hospital", h: "Sick" }, { w: "Beach", h: "Sand" },
+                { w: "Space Station", h: "Orbit" }, { w: "Prison", h: "Jail" }, { w: "Library", h: "Books" },
+                { w: "Casino", h: "Gambling" }, { w: "Zoo", h: "Animals" }, { w: "Mars", h: "Red Planet" }, { w: "Gym", h: "Workout" },
+                { w: "Cinema", h: "Movies" }, { w: "Museum", h: "Art" }, { w: "Graveyard", h: "Spooky" }
             ],
             "Household": [
-                { w: "Chair", h: "Sit / Legs" }, { w: "Toaster", h: "Bread / Hot" }, { w: "Phone", h: "Call / Screen" },
-                { w: "Shoe", h: "Foot / Walk" }, { w: "Umbrella", h: "Rain / Dry" }, { w: "Mirror", h: "Reflect / Glass" },
-                { w: "Fork", h: "Eat / Prongs" }, { w: "Laptop", h: "Computer / Fold" }, { w: "Bed", h: "Sleep / Soft" }, { w: "Lamp", h: "Light / Switch" },
-                { w: "Toilet", h: "Flush / Bathroom" }, { w: "Fridge", h: "Cold / Food" }, { w: "Key", h: "Lock / Open" }
+                { w: "Chair", h: "Sit" }, { w: "Toaster", h: "Bread" }, { w: "Phone", h: "Call" },
+                { w: "Shoe", h: "Walk" }, { w: "Umbrella", h: "Rain" }, { w: "Mirror", h: "Reflect" },
+                { w: "Fork", h: "Prongs" }, { w: "Laptop", h: "Computer" }, { w: "Bed", h: "Sleep" }, { w: "Lamp", h: "Light" },
+                { w: "Toilet", h: "Flush" }, { w: "Fridge", h: "Cold" }, { w: "Key", h: "Lock" }
             ],
             "Vehicles": [
-                { w: "Car", h: "Drive / Wheels" }, { w: "Bicycle", h: "Pedal / Two" }, { w: "Train", h: "Track / Choo" }, { w: "Boat", h: "Water / Float" },
-                { w: "Helicopter", h: "Spin / Air" }, { w: "Tank", h: "War / Heavy" }, { w: "Submarine", h: "Underwater" }, { w: "Skateboard", h: "Tricks / Push" }
+                { w: "Car", h: "Drive" }, { w: "Bicycle", h: "Pedal" }, { w: "Train", h: "Track" }, { w: "Boat", h: "Float" },
+                { w: "Helicopter", h: "Spin" }, { w: "Tank", h: "War" }, { w: "Submarine", h: "Underwater" }, { w: "Skateboard", h: "Push" }
             ],
             "Sports": [
-                { w: "Soccer", h: "Kick / Goal" }, { w: "Basketball", h: "Hoop / Bounce" }, { w: "Tennis", h: "Racket / Net" }, { w: "Golf", h: "Club / Hole" },
-                { w: "Boxing", h: "Punch / Ring" }, { w: "Swimming", h: "Water / Pool" }, { w: "Baseball", h: "Bat / Base" }, { w: "Volleyball", h: "Beach / Spike" }
+                { w: "Soccer", h: "Goal" }, { w: "Basketball", h: "Hoop" }, { w: "Tennis", h: "Racket" }, { w: "Golf", h: "Club" },
+                { w: "Boxing", h: "Punch" }, { w: "Swimming", h: "Pool" }, { w: "Baseball", h: "Bat" }, { w: "Volleyball", h: "Spike" }
             ],
             "Nature": [
-                { w: "Tree", h: "Leaves / Wood" }, { w: "Volcano", h: "Lava / Hot" }, { w: "Rain", h: "Water / Sky" }, { w: "Sun", h: "Hot / Star" },
-                { w: "Moon", h: "Night / Space" }, { w: "Cloud", h: "White / Fluffy" }, { w: "Flower", h: "Rose / Smell" }, { w: "Mountain", h: "High / Climb" }
+                { w: "Tree", h: "Wood" }, { w: "Volcano", h: "Lava" }, { w: "Rain", h: "Water" }, { w: "Sun", h: "Hot" },
+                { w: "Moon", h: "Night" }, { w: "Cloud", h: "Fluffy" }, { w: "Flower", h: "Smell" }, { w: "Mountain", h: "Climb" }
             ],
             "Electronics": [
-                { w: "Camera", h: "Photo / Lens" }, { w: "Headphones", h: "Music / Ears" }, { w: "Drone", h: "Fly / Remote" }, { w: "Battery", h: "Power / Charge" },
-                { w: "Keyboard", h: "Type / Keys" }, { w: "Mouse", h: "Click / Scroll" }, { w: "Robot", h: "Metal / AI" }, { w: "Tablet", h: "Touch / Screen" }
+                { w: "Camera", h: "Lens" }, { w: "Headphones", h: "Music" }, { w: "Drone", h: "Fly" }, { w: "Battery", h: "Power" },
+                { w: "Keyboard", h: "Type" }, { w: "Mouse", h: "Click" }, { w: "Robot", h: "AI" }, { w: "Tablet", h: "Touch" }
             ],
             "Clothes": [
-                { w: "Hat", h: "Head / Cap" }, { w: "Jeans", h: "Pants / Denim" }, { w: "Shirt", h: "Torso / Wear" }, { w: "Socks", h: "Feet / Warm" },
-                { w: "Glasses", h: "Eyes / See" }, { w: "Watch", h: "Wrist / Time" }, { w: "Coat", h: "Winter / Warm" }, { w: "Gloves", h: "Hands / Fingers" }
+                { w: "Hat", h: "Cap" }, { w: "Jeans", h: "Denim" }, { w: "Shirt", h: "Torso" }, { w: "Socks", h: "Warm" },
+                { w: "Glasses", h: "Eyes" }, { w: "Watch", h: "Time" }, { w: "Coat", h: "Winter" }, { w: "Gloves", h: "Hands" }
             ]
         };
 
@@ -238,7 +238,7 @@
             }
 
             // Construct System Prompt
-            let systemContext = `You are a tactical AI in a game called 'The Imposter'. Be brief, cryptic, and cyberpunk.`;
+            let systemContext = `You are a tactical AI in a game called 'The Imposter'. Be brief, cryptic, and cyberpunk, but stay helpful to the users.`;
             if (aiParams.role === 'CITIZEN' || aiParams.role === 'HOST/PLAYER') {
                 systemContext += ` The user is a Citizen. The Topic is ${aiParams.topic}. The Secret Word is ${aiParams.word}. Do NOT reveal the word directly, but give hints or strategies if asked.`;
             } else if (aiParams.role === 'IMPOSTER') {
@@ -538,9 +538,13 @@
                     <button onclick="addPlayer()" style="background:none; border:none; color:var(--primary); font-size:1.5rem;">+</button>
                 </div>
                 
-                <div style="margin-bottom:15px; display:flex; flex-wrap:wrap; justify-content:center; gap:5px;">
-                   ${availablePresets.map(p => `<div class="preset-chip" onclick="addPlayer('${p}')">+ ${p}</div>`).join('')}
-                </div>
+                        <!-- START OF EDITED SECTION -->
+                    <button id="preset-toggle-btn" class="btn btn-small btn-secondary" onclick="togglePresetNames()" style="margin: 0 auto 15px auto; display:block; width:auto;">EXPAND NAMES [+]</button>
+                    
+                    <div id="preset-container" style="margin-bottom:15px; display:none; flex-wrap:wrap; justify-content:center; gap:5px;">
+                       ${availablePresets.map(p => `<div class="preset-chip" onclick="addPlayer('${p}')">+ ${p}</div>`).join('')}
+                    </div>
+                    <!-- END OF EDITED SECTION -->
 
                 <div class="grid-names">
                     ${state.players.map((p, i) => `<div class="name-chip" onclick="removePlayer(${i})">${p}</div>`).join('')}
@@ -1072,6 +1076,24 @@
             const enableBtn = () => { document.getElementById('nextBtn').style.opacity=1; document.getElementById('nextBtn').style.pointerEvents='all'; };
             box.addEventListener('mousedown', enableBtn);
             box.addEventListener('touchstart', enableBtn);
+        }
+
+                // --- ADD THIS HELPER FUNCTION ---
+        function togglePresetNames() {
+            const container = document.getElementById('preset-container');
+            const btn = document.getElementById('preset-toggle-btn');
+            
+            if (container.style.display === 'none') {
+                container.style.display = 'flex'; // Flex to keep the chips aligned
+                btn.innerHTML = 'COLLAPSE NAMES [-]';
+                btn.style.borderColor = 'var(--primary)'; // Highlight button
+                playSfx('click');
+            } else {
+                container.style.display = 'none';
+                btn.innerHTML = 'EXPAND NAMES [+]';
+                btn.style.borderColor = 'var(--text)'; // Reset button
+                playSfx('click');
+            }
         }
 
         init();
